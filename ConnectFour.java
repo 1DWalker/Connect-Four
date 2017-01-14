@@ -1,6 +1,6 @@
-import java.lang.System;
+import java.lang.System; //Time
 import java.util.Scanner;
-import java.util.Random;
+import java.util.Random; //Use for AI
 import org.apache.commons.math3.special.Erf; //For Likelihood of Superiority test. Test to see how LOS behaves, then decide how to use it.
 
 public class ConnectFour {
