@@ -251,7 +251,7 @@ public class ConnectFour {
 	public static int[] computerOneMoveCoordinates (int[][] board) {
 		//Un-comment those comments standing out below & delete 
 		 //"int columnRandom =  randomInt.nextInt(board.length);" for a weird increase in playing strength ;) 
-		 //+50 elo, which is the amount of elo a top chess engine gains per year of development.
+		 //+50 elo, which is the amount of elo a top chess engine gains per year of development. Exciting! 
 		int[] computerMoveCoordinates = new int[2];
 		Random randomInt = new Random();
 	//	int l = 1;
