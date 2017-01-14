@@ -1,14 +1,9 @@
-/*This class is called from the method computerTwoMoveCoordinates in the class ConnectFour.
- *This class will maintain the memory that it requires to play. 
- *Good luck!
-*/
-
 import java.util.Random;
 //computer one makes a move, given the board, time controls, current time, and others. Tell me what parameters you need! Ex: last player's move?
 
 public class ComputerTwo {
 
-    public static int[] makeMove(int[][] board, long[] timeControl, long playerTime) {
+    public static int[] makeMove(int[][] board, int[] lastMoveCoordinates, long[] timeControl, long playerTime) {
 		int[] computerMoveCoordinates = new int[2];
 		Random randomInt = new Random();
 	

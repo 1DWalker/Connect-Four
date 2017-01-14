@@ -46,6 +46,7 @@ public class ConnectFour {
 		do {
 			int gameLength = 0;
 			String player = "X";
+			int[] lastMoveCoordinates = {board.length, board[0].length}; //MAYBE YOUR PROGRAM NEEDS THIS. Make a move based on your opponent's move!
 			
 			long[] playerTime = new long[2];
 			playerTime[0] = timeControl[0];
@@ -65,14 +66,16 @@ public class ConnectFour {
 				//Take move from human/computer
 				timeStart = System.currentTimeMillis();
 				if (switchSides == 0) {
-					if (player.equals("X") & options[2] == 1) moveChoiceCoordinates =computerOneMoveCoordinates(board, timeControl, playerTime[0]);
-					else if (player.equals("O") & options[3] == 1) moveChoiceCoordinates = computerTwoMoveCoordinates(board, timeControl, playerTime[1]);
+					if (player.equals("X") & options[2] == 1) moveChoiceCoordinates =computerOneMoveCoordinates(board, lastMoveCoordinates, timeControl, playerTime[0]);
+					else if (player.equals("O") & options[3] == 1) moveChoiceCoordinates = computerTwoMoveCoordinates(board, lastMoveCoordinates, timeControl, playerTime[1]);
 					else moveChoiceCoordinates = userMoveCoordinates(board, player);
 				} else {
-					if (player.equals("O") & options[2] == 1) moveChoiceCoordinates = computerOneMoveCoordinates(board, timeControl, playerTime[1]);
-					else if (player.equals("X") & options[3] == 1) moveChoiceCoordinates = computerTwoMoveCoordinates(board, timeControl, playerTime[0]);
+					if (player.equals("O") & options[2] == 1) moveChoiceCoordinates = computerOneMoveCoordinates(board, lastMoveCoordinates, timeControl, playerTime[1]);
+					else if (player.equals("X") & options[3] == 1) moveChoiceCoordinates = computerTwoMoveCoordinates(board, lastMoveCoordinates, timeControl, playerTime[0]);
 					else moveChoiceCoordinates = userMoveCoordinates(board, player);
 				}
+				
+				lastMoveCoordinates = moveChoiceCoordinates;
 				
 				//end time
 				timeEnd = System.currentTimeMillis();
@@ -137,6 +140,7 @@ public class ConnectFour {
 			do {
 				int gameLength = 0;
 				String player = "X";
+				int[] lastMoveCoordinates = {board.length, board[0].length}; //MAYBE YOUR PROGRAM NEEDS THIS. Make a move based on your opponent's move!
 				
 				long[] playerTime = new long[2];
 				playerTime[0] = timeControl[0];
@@ -156,14 +160,16 @@ public class ConnectFour {
 					//Take move from human/computer
 					timeStart = System.currentTimeMillis();
 					if (switchSides == 0) {
-						if (player.equals("X") & options[2] == 1) moveChoiceCoordinates = computerOneMoveCoordinates(board, timeControl, playerTime[0]);
-						else if (player.equals("O") & options[3] == 1) moveChoiceCoordinates = computerTwoMoveCoordinates(board, timeControl, playerTime[1]);
+						if (player.equals("X") & options[2] == 1) moveChoiceCoordinates = computerOneMoveCoordinates(board, lastMoveCoordinates, timeControl, playerTime[0]);
+						else if (player.equals("O") & options[3] == 1) moveChoiceCoordinates = computerTwoMoveCoordinates(board, lastMoveCoordinates, timeControl, playerTime[1]);
 						else moveChoiceCoordinates = userMoveCoordinates(board, player);
 					} else {
-						if (player.equals("O") & options[2] == 1) moveChoiceCoordinates = computerOneMoveCoordinates(board, timeControl, playerTime[1]);
-						else if (player.equals("X") & options[3] == 1) moveChoiceCoordinates = computerTwoMoveCoordinates(board, timeControl, playerTime[0]);
+						if (player.equals("O") & options[2] == 1) moveChoiceCoordinates = computerOneMoveCoordinates(board, lastMoveCoordinates, timeControl, playerTime[1]);
+						else if (player.equals("X") & options[3] == 1) moveChoiceCoordinates = computerTwoMoveCoordinates(board, lastMoveCoordinates, timeControl, playerTime[0]);
 						else moveChoiceCoordinates = userMoveCoordinates(board, player);
 					}
+					
+					lastMoveCoordinates = moveChoiceCoordinates; 
 					
 					//end time
 					timeEnd = System.currentTimeMillis();
@@ -248,12 +254,12 @@ public class ConnectFour {
 		} while (playAnotherGame());
 	}
 	
-	public static int[] computerOneMoveCoordinates(int[][] board, long[] timeControl, long playerTime) {
-		return ComputerOne.makeMove(board, timeControl, playerTime);
+	public static int[] computerOneMoveCoordinates(int[][] board, int[] lastMoveCoordinates, long[] timeControl, long playerTime) {
+		return ComputerOne.makeMove(board, lastMoveCoordinates, timeControl, playerTime);
 	}
 	
-	public static int[] computerTwoMoveCoordinates(int[][] board, long[] timeControl, long playerTime) {
-		return ComputerTwo.makeMove(board, timeControl, playerTime);
+	public static int[] computerTwoMoveCoordinates(int[][] board, int[] lastMoveCoordinates, long[] timeControl, long playerTime) {
+		return ComputerTwo.makeMove(board, lastMoveCoordinates, timeControl, playerTime);
 	}
 	
 	public static void printBoard(int[][] board) {
