@@ -1,19 +1,53 @@
 import java.util.Scanner;
 import java.util.Random;
+import org.apache.commons.math3.special.Erf; //For Likelihood of Superiority test
 
 public class ConnectFour {
 	
 	public static void main(String[] args) {
-		//Computer players
-		boolean playerXComputer = true;
-		boolean playerOComputer = true;
+		//Options. 1 for YES, 0 for NO, unless a measure size
+		int options[] = new int[8];
+		//Width of board
+		options[0] = 7;
+		//Height of board
+		options[1] = 6;
+		//Computer One
+		options[2] = 1;
+		//Computer Two:
+		options[3] = 1;
+		//Switch sides after every game
+		options[4] = 1;
+		//Print board every move
+		options[5] = 1;
+		//Print board at the end of the game
+		options[6] = 1;
+		//Calculate elo difference? Information on elo can be found here: https://en.wikipedia.org/wiki/Elo_rating_system , https://en.wikipedia.org/wiki/Chess_rating_system
+		options[7] = 1;	
 		
+		//Time control settings	
+		double[] beginningTimeControl = new double[2];
+		//beginning time in seconds
+		beginningTimeControl[0] = 30.0;
+		//incremental time in seconds
+		beginningTimeControl[1] = 3.0;
 		
+		//Match Type. Un-comment the one you want to use and their parameters.
+		//1. 1 game
+		oneGame(options, beginningTimeControl);
+		
+		//2. Match with n games
+		//int n = 100; //# of games
+		//match(n, options);
+		
+		//3. Likelihood of Superiority Test (LOS). Must have the package Apache commons math. Used to determine the probability that a player is stronger than the other. 
+		//int n = 100; //# of games
+		//likelihoodOfSuperiority(n, options); 
+	}
+	
+	public static void oneGame(int[] options, double[] beginningTimeControl) {
 		Scanner keyboard = new Scanner(System.in);
 		
-		int rowLength = 7;
-		int columnLength = 6;
-		int[][] board = new int[rowLength][columnLength]; // board[col][row] is the correct use order2
+		int[][] board = new int[options[0]][options[1]];
 		int sentinel = 1;
 		
 		do {
@@ -21,10 +55,10 @@ public class ConnectFour {
 			String player = "X";
 			
 			printBoard(board);
-			while (gameLength < rowLength * columnLength) {
+			while (gameLength < options[0] * options[1]) {
 				int[] moveChoiceCoordinates = new int[2];
-				if (player.equals("X") & playerXComputer) moveChoiceCoordinates = computerOneMoveCoordinates(board);
-				else if (player.equals("O") & playerOComputer) moveChoiceCoordinates = computerTwoMoveCoordinates(board);
+				if (player.equals("X") & options[2] == 1) moveChoiceCoordinates = computerOneMoveCoordinates(board);
+				else if (player.equals("O") & options[3] == 1) moveChoiceCoordinates = computerTwoMoveCoordinates(board);
 				else moveChoiceCoordinates = userMoveCoordinates(board, player);
 				
 				changeBoard(board, moveChoiceCoordinates, player);
@@ -38,14 +72,14 @@ public class ConnectFour {
 				player = player.equals("X") ? "O" : "X";
 				gameLength++;
 				
-				if (gameLength == rowLength * columnLength) {
+				if (gameLength == options[0] * options[1]) {
 					System.out.println("Draw!");
 				}
 			}
 			
 			clearBoard(board);
 		} while (playAnotherGame());
-	}	
+	}
 	
 	public static int[] computerOneMoveCoordinates (int[][] board) {
 		int[] computerMoveCoordinates = new int[2];
