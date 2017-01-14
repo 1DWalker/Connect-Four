@@ -4,8 +4,8 @@ import java.util.Random;
 public class ConnectFour {
 	
 	public static void main(String[] args) {
-		//COMPUTERS!!!
-		boolean playerXComputer = false;
+		//Computer players
+		boolean playerXComputer = true;
 		boolean playerOComputer = true;
 		
 		
@@ -16,7 +16,7 @@ public class ConnectFour {
 		byte[][] board = new byte[rowLength][columnLength]; // board[col][row] is the correct use order2
 		int sentinel = 1;
 		
-		while (sentinel == 1) {
+		do {
 			int gameLength = 0;
 			String player = "X";
 			
@@ -42,18 +42,15 @@ public class ConnectFour {
 				}
 			}
 			
-			System.out.print("1 - play again, 2 - exit: ");
-			sentinel = keyboard.nextInt();
-			
-			//clear board
 			clearBoard(board);
-		}
+		} while (playAnotherGame());
 	}	
 	
 	public static int[] computerMoveCoordinates (byte[][] board) {
 		int[] computerMoveCoordinates = new int[2];
 		Random randomInt = new Random();
 		
+		//Select move to play randomly
 		moveSelection:
 		while (true) {
 			int columnRandom =  randomInt.nextInt(board.length);
@@ -76,7 +73,6 @@ public class ConnectFour {
 	}
 	
 	public static void printBoard(byte[][] board) {
-		//System.out.print("  ");
 		for (int num = 1; num <= board.length; num++) {
 			System.out.print(num + " ");
 		} 
@@ -84,8 +80,6 @@ public class ConnectFour {
 		System.out.println();
 		
 		for (int row = 0; row < board[0].length; row++) {
-			//System.out.print((row + 1) + " ");
-			
 			for (int col = 0; col < board.length; col++) {
 				switch (board[col][row]) {
 					case 0: 
@@ -107,6 +101,7 @@ public class ConnectFour {
 	}
 	
 	public static void clearBoard(byte[][] board) {
+		//For when another game is to be played
 		for (int row = 0; row < board[0].length; row++) {
 			for (int col = 0; col < board.length; col++) {
 				board[col][row] = (byte) 0;
@@ -115,10 +110,11 @@ public class ConnectFour {
 	}
 	
 	public static int[] userMoveCoordinates(byte[][] board, String player) {
+		//Take user input and convert into coordinates on the array board
 		int[] userMoveCoordinates = new int[2];
 		Scanner keyboard = new Scanner(System.in);
 		
-		int playerNumber = player.equals("X") ? 1 : 2; //1 if X, 2 if O
+		int playerNumber = player.equals("X") ? 1 : 2;
 		
 		legalMoveCheck:
 		while (true) {
@@ -217,4 +213,19 @@ public class ConnectFour {
 		
 		return false;
 	}	
+		
+	public static boolean playAnotherGame() {
+		Scanner keyboard = new Scanner(System.in);
+			
+		System.out.print("1 - play again, 2 - exit: ");
+		int choice = keyboard.nextInt();
+		
+		switch (choice) {
+			case 1:
+				return true;
+			default:
+				System.out.println("Program terminated.");
+				return false;
+		}
+	}
 }
