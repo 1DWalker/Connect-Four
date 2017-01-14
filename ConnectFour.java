@@ -19,9 +19,9 @@ public class ConnectFour {
 		//Switch sides after every game
 		options[4] = 1;
 		//Print board every move
-		options[5] = 0;
+		options[5] = 1;
 		//Print board & stats at the end of the game
-		options[6] = 0;
+		options[6] = 1;
 		
 		//Time control settings	
 		long[] timeControl = new long[2];
@@ -36,9 +36,8 @@ public class ConnectFour {
 	//	oneGame(options, timeControl, switchSides);
 		
 		//2. Match with n games
-		int n = 1000000; //# of games
-		int los = 0; //Likelihood of Superiority Test (LOS). Must have the package Apache commons math. Used to determine the probability that a player is stronger than the other. 
-		match(n, options, timeControl, los);
+	//	int n = 1; //# of games
+	//	match(n, options, timeControl, los);
 	}
 	
 	public static void oneGame(int[] options, long[] timeControl, int switchSides) {
