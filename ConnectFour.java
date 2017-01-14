@@ -31,13 +31,13 @@ public class ConnectFour {
 		timeControl[1] = 1000;
 		
 		//Match Type. Un-comment the one you want to use and their parameters.
-	//	1. 1 game
+		//1. 1 game
 	//	int switchSides = 0; //Switch sides? Useful for human vs computer or computer vs computer fun
 	//	oneGame(options, timeControl, switchSides);
 		
 		//2. Match with n games
-	//	int n = 1; //# of games
-	//	match(n, options, timeControl, los);
+		int n = 3; //# of games
+		match(n, options, timeControl);
 	}
 	
 	public static void oneGame(int[] options, long[] timeControl, int switchSides) {
@@ -122,7 +122,7 @@ public class ConnectFour {
 		} while (playAnotherGame());
 	}
 	
-	public static void match(int n, int[] options, long[] timeControl, int los) {
+	public static void match(int n, int[] options, long[] timeControl) {
 		int[][] board = new int[options[0]][options[1]];
 		
 		do {
@@ -249,8 +249,8 @@ public class ConnectFour {
 	
 	public static int[] computerOneMoveCoordinates (int[][] board) {
 		//Un-comment those comments standing out below & delete 
-		 //"int columnRandom =  randomInt.nextInt(board.length);" for a weird increase in playing strength ;) 
-		 //+50 elo, which is the amount of elo a top chess engine gains per year of development. Exciting! 
+		//"int columnRandom =  randomInt.nextInt(board.length);" for a weird increase in playing strength ;) 
+		//+50 elo, which is the amount of elo a top chess engine gains per year of development. Exciting! 
 		int[] computerMoveCoordinates = new int[2];
 		Random randomInt = new Random();
 	//	int l = 1;
