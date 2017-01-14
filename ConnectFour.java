@@ -1,7 +1,7 @@
 import java.lang.System; //Time
 import java.util.Scanner;
-//IF you don't have this, make it into a comment and make the line that uses this into a comment as well.
-import org.apache.commons.math3.special.Erf; //For Likelihood of Superiority test. Test to see how LOS behaves, then decide how to use it.
+//import org.apache.commons.math3.special.Erf; //For Likelihood of Superiority test. Test to see how LOS behaves, then decide how to use it.
+//If using apache commons math, un-comment the last line in method matchStatement
 
 public class ConnectFour {
 	
@@ -334,7 +334,7 @@ public class ConnectFour {
 		//Information on elo can be found here: https://en.wikipedia.org/wiki/Elo_rating_system , https://en.wikipedia.org/wiki/Chess_rating_system
 		System.out.println("Elo difference: " + (-400.0 * Math.log((1.0 / ((wins + 0.5 * draws) / i)) - 1) / Math.log(10.0)));
 		//https://chessprogramming.wikispaces.com/Match+Statistics
-		System.out.println("LOS: " + (0.5 + 0.5 * Erf.erf((wins - losses) / Math.sqrt(2.0 * (wins + losses))))); 
+		//System.out.println("LOS: " + (0.5 + 0.5 * Erf.erf((wins - losses) / Math.sqrt(2.0 * (wins + losses))))); 
 	}
 	
 	public static void timeStatement (int[] options, long[] playerTime, long[] timeControl, int switchSides) {
