@@ -1,5 +1,9 @@
 # Connect-Four
 
+Download apache commons math here http://commons.apache.org/proper/commons-math/download_math.cgi (i used bin.zip idk what works)
+Refer to this to get it set up on jcreator http://oopbook.com/java-classpath-2/classpath-in-jcreator/
+Doing this gets access to the LOS calculator
+
 Rules: 
 
 -Grid size of 7 across, 6 down
