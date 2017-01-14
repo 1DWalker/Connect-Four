@@ -13,7 +13,7 @@ public class ConnectFour {
 		
 		int rowLength = 7;
 		int columnLength = 6;
-		byte[][] board = new byte[rowLength][columnLength]; // board[col][row] is the correct use order2
+		int[][] board = new int[rowLength][columnLength]; // board[col][row] is the correct use order2
 		int sentinel = 1;
 		
 		do {
@@ -23,7 +23,8 @@ public class ConnectFour {
 			printBoard(board);
 			while (gameLength < rowLength * columnLength) {
 				int[] moveChoiceCoordinates = new int[2];
-				if (player.equals("X") & playerXComputer | player.equals("O") & playerOComputer) moveChoiceCoordinates = computerMoveCoordinates(board);
+				if (player.equals("X") & playerXComputer) moveChoiceCoordinates = computerOneMoveCoordinates(board);
+				else if (player.equals("O") & playerOComputer) moveChoiceCoordinates = computerTwoMoveCoordinates(board);
 				else moveChoiceCoordinates = userMoveCoordinates(board, player);
 				
 				changeBoard(board, moveChoiceCoordinates, player);
@@ -46,7 +47,7 @@ public class ConnectFour {
 		} while (playAnotherGame());
 	}	
 	
-	public static int[] computerMoveCoordinates (byte[][] board) {
+	public static int[] computerOneMoveCoordinates (int[][] board) {
 		int[] computerMoveCoordinates = new int[2];
 		Random randomInt = new Random();
 		
@@ -72,7 +73,33 @@ public class ConnectFour {
 		return computerMoveCoordinates;
 	}
 	
-	public static void printBoard(byte[][] board) {
+	public static int[] computerTwoMoveCoordinates (int[][] board) {
+		int[] computerMoveCoordinates = new int[2];
+		Random randomInt = new Random();
+		
+		//Select move to play randomly
+		moveSelection:
+		while (true) {
+			int columnRandom =  randomInt.nextInt(board.length);
+			
+			//Is the column filled?
+			for (int i = board[0].length - 1; i >= 0; i--) {
+				if (board[columnRandom][i] == 0) {
+					computerMoveCoordinates[0] = columnRandom;
+					computerMoveCoordinates[1] = i;
+					break;
+				}
+				
+				if (i == 0) continue moveSelection;
+			}
+			
+			break;
+		}
+		
+		return computerMoveCoordinates;
+	}
+	
+	public static void printBoard(int[][] board) {
 		for (int num = 1; num <= board.length; num++) {
 			System.out.print(num + " ");
 		} 
@@ -100,16 +127,16 @@ public class ConnectFour {
 		System.out.println();
 	}
 	
-	public static void clearBoard(byte[][] board) {
+	public static void clearBoard(int[][] board) {
 		//For when another game is to be played
 		for (int row = 0; row < board[0].length; row++) {
 			for (int col = 0; col < board.length; col++) {
-				board[col][row] = (byte) 0;
+				board[col][row] = 0;
 			}
 		}
 	}
 	
-	public static int[] userMoveCoordinates(byte[][] board, String player) {
+	public static int[] userMoveCoordinates(int[][] board, String player) {
 		//Take user input and convert into coordinates on the array board
 		int[] userMoveCoordinates = new int[2];
 		Scanner keyboard = new Scanner(System.in);
@@ -141,12 +168,12 @@ public class ConnectFour {
 		return userMoveCoordinates;
 	}
 	
-	public static void changeBoard(byte[][] board, int[] moveChoiceCoordinates, String player) {
-		board[moveChoiceCoordinates[0]][moveChoiceCoordinates[1]] = player.equals("X") ? (byte) 1 : (byte) 2;
+	public static void changeBoard(int[][] board, int[] moveChoiceCoordinates, String player) {
+		board[moveChoiceCoordinates[0]][moveChoiceCoordinates[1]] = player.equals("X") ? 1 : 2;
 	}
 	
 	//If you have a faster version, include it in your engine! This is just something makes sense
-	public static boolean winningConditionCheck(byte[][] board, int[] moveChoiceCoordinates, String player) {
+	public static boolean winningConditionCheck(int[][] board, int[] moveChoiceCoordinates, String player) {
 		int numberInARow;
 		int playerNumber = player.equals("X") ? 1 : 2;
 		int coordinatesSum = moveChoiceCoordinates[0] + moveChoiceCoordinates[1]; //Used in checking for diagonals
