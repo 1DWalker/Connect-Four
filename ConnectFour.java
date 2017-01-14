@@ -1,6 +1,7 @@
 import java.lang.System; //Time
 import java.util.Scanner;
 import java.util.Random; //Use for AI
+//IF you don't have this, make it into a comment and make the line that uses this into a comment as well.
 import org.apache.commons.math3.special.Erf; //For Likelihood of Superiority test. Test to see how LOS behaves, then decide how to use it.
 
 public class ConnectFour {
