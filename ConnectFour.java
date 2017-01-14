@@ -1,6 +1,5 @@
 import java.lang.System; //Time
 import java.util.Scanner;
-import java.util.Random; //Use for AI
 //IF you don't have this, make it into a comment and make the line that uses this into a comment as well.
 import org.apache.commons.math3.special.Erf; //For Likelihood of Superiority test. Test to see how LOS behaves, then decide how to use it.
 
@@ -66,12 +65,12 @@ public class ConnectFour {
 				//Take move from human/computer
 				timeStart = System.currentTimeMillis();
 				if (switchSides == 0) {
-					if (player.equals("X") & options[2] == 1) moveChoiceCoordinates = computerOneMoveCoordinates(board);
-					else if (player.equals("O") & options[3] == 1) moveChoiceCoordinates = computerTwoMoveCoordinates(board);
+					if (player.equals("X") & options[2] == 1) moveChoiceCoordinates =computerOneMoveCoordinates(board, timeControl, playerTime[0]);
+					else if (player.equals("O") & options[3] == 1) moveChoiceCoordinates = computerTwoMoveCoordinates(board, timeControl, playerTime[1]);
 					else moveChoiceCoordinates = userMoveCoordinates(board, player);
 				} else {
-					if (player.equals("O") & options[2] == 1) moveChoiceCoordinates = computerOneMoveCoordinates(board);
-					else if (player.equals("X") & options[3] == 1) moveChoiceCoordinates = computerTwoMoveCoordinates(board);
+					if (player.equals("O") & options[2] == 1) moveChoiceCoordinates = computerOneMoveCoordinates(board, timeControl, playerTime[1]);
+					else if (player.equals("X") & options[3] == 1) moveChoiceCoordinates = computerTwoMoveCoordinates(board, timeControl, playerTime[0]);
 					else moveChoiceCoordinates = userMoveCoordinates(board, player);
 				}
 				
@@ -123,6 +122,7 @@ public class ConnectFour {
 		} while (playAnotherGame());
 	}
 	
+	//Can combine method oneGame and method match but I'm too lazy and it doesn't really matter
 	public static void match(int n, int[] options, long[] timeControl) {
 		int[][] board = new int[options[0]][options[1]];
 		
@@ -156,12 +156,12 @@ public class ConnectFour {
 					//Take move from human/computer
 					timeStart = System.currentTimeMillis();
 					if (switchSides == 0) {
-						if (player.equals("X") & options[2] == 1) moveChoiceCoordinates = computerOneMoveCoordinates(board);
-						else if (player.equals("O") & options[3] == 1) moveChoiceCoordinates = computerTwoMoveCoordinates(board);
+						if (player.equals("X") & options[2] == 1) moveChoiceCoordinates = computerOneMoveCoordinates(board, timeControl, playerTime[0]);
+						else if (player.equals("O") & options[3] == 1) moveChoiceCoordinates = computerTwoMoveCoordinates(board, timeControl, playerTime[1]);
 						else moveChoiceCoordinates = userMoveCoordinates(board, player);
 					} else {
-						if (player.equals("O") & options[2] == 1) moveChoiceCoordinates = computerOneMoveCoordinates(board);
-						else if (player.equals("X") & options[3] == 1) moveChoiceCoordinates = computerTwoMoveCoordinates(board);
+						if (player.equals("O") & options[2] == 1) moveChoiceCoordinates = computerOneMoveCoordinates(board, timeControl, playerTime[1]);
+						else if (player.equals("X") & options[3] == 1) moveChoiceCoordinates = computerTwoMoveCoordinates(board, timeControl, playerTime[0]);
 						else moveChoiceCoordinates = userMoveCoordinates(board, player);
 					}
 					
@@ -248,62 +248,12 @@ public class ConnectFour {
 		} while (playAnotherGame());
 	}
 	
-	public static int[] computerOneMoveCoordinates (int[][] board) {
-		//Un-comment those comments standing out below & delete 
-		//"int columnRandom =  randomInt.nextInt(board.length);" for a weird increase in playing strength ;) 
-		//+50 elo, which is the amount of elo a top chess engine gains per year of development. Exciting! 
-		int[] computerMoveCoordinates = new int[2];
-		Random randomInt = new Random();
-	//	int l = 1;
-		//Select move to play randomly
-		moveSelection:
-		while (true) {
-			int columnRandom =  randomInt.nextInt(board.length);
-		//	int columnRandom =  randomInt.nextInt(board.length - 1);
-		//	l++;
-		//	if (l == 50) columnRandom = 6;
-			
-			//Is the column filled?
-			for (int i = board[0].length - 1; i >= 0; i--) {
-				if (board[columnRandom][i] == 0) {
-					computerMoveCoordinates[0] = columnRandom;
-					computerMoveCoordinates[1] = i;
-					break;
-				}
-				
-				if (i == 0) continue moveSelection;
-			}
-			
-			break;
-		}
-		
-		return computerMoveCoordinates;
+	public static int[] computerOneMoveCoordinates(int[][] board, long[] timeControl, long playerTime) {
+		return ComputerOne.makeMove(board, timeControl, playerTime);
 	}
 	
-	public static int[] computerTwoMoveCoordinates (int[][] board) {
-		int[] computerMoveCoordinates = new int[2];
-		Random randomInt = new Random();
-		
-		//Select move to play randomly
-		moveSelection:
-		while (true) {
-			int columnRandom =  randomInt.nextInt(board.length);
-			
-			//Is the column filled?
-			for (int i = board[0].length - 1; i >= 0; i--) {
-				if (board[columnRandom][i] == 0) {
-					computerMoveCoordinates[0] = columnRandom;
-					computerMoveCoordinates[1] = i;
-					break;
-				}
-				
-				if (i == 0) continue moveSelection;
-			}
-			
-			break;
-		}
-		
-		return computerMoveCoordinates;
+	public static int[] computerTwoMoveCoordinates(int[][] board, long[] timeControl, long playerTime) {
+		return ComputerTwo.makeMove(board, timeControl, playerTime);
 	}
 	
 	public static void printBoard(int[][] board) {
