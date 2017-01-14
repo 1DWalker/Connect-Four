@@ -3,6 +3,53 @@ import java.util.Random;
 
 public class ConnectFour {
 	
+	public static void main(String[] args) {
+		//COMPUTERS!!!
+		boolean playerXComputer = false;
+		boolean playerOComputer = true;
+		
+		
+		Scanner keyboard = new Scanner(System.in);
+		
+		int rowLength = 7;
+		int columnLength = 6;
+		byte[][] board = new byte[rowLength][columnLength]; // board[col][row] is the correct use order2
+		int sentinel = 1;
+		
+		while (sentinel == 1) {
+			int gameLength = 0;
+			String player = "X";
+			
+			printBoard(board);
+			while (gameLength < rowLength * columnLength) {
+				int[] moveChoiceCoordinates = new int[2];
+				if (player.equals("X") & playerXComputer | player.equals("O") & playerOComputer) moveChoiceCoordinates = computerMoveCoordinates(board);
+				else moveChoiceCoordinates = userMoveCoordinates(board, player);
+				
+				changeBoard(board, moveChoiceCoordinates, player);
+				printBoard(board);
+				if (winningConditionCheck(board, moveChoiceCoordinates, player)) {
+					System.out.println("Player " + player + " wins!");
+					System.out.println();
+					break;
+				}
+				
+				player = player.equals("X") ? "O" : "X";
+				gameLength++;
+				
+				if (gameLength == rowLength * columnLength) {
+					System.out.println("Draw!");
+				}
+			}
+			
+			System.out.print("1 - play again, 2 - exit: ");
+			sentinel = keyboard.nextInt();
+			
+			//clear board
+			clearBoard(board);
+		}
+	}	
+	
 	public static int[] computerMoveCoordinates (byte[][] board) {
 		int[] computerMoveCoordinates = new int[2];
 		Random randomInt = new Random();
@@ -10,7 +57,8 @@ public class ConnectFour {
 		moveSelection:
 		while (true) {
 			int columnRandom =  randomInt.nextInt(board.length);
-
+			
+			//Is the column filled?
 			for (int i = board[0].length - 1; i >= 0; i--) {
 				if (board[columnRandom][i] == 0) {
 					computerMoveCoordinates[0] = columnRandom;
@@ -169,51 +217,4 @@ public class ConnectFour {
 		
 		return false;
 	}	
-		
-	public static void main(String[] args) {
-		//COMPUTERS!!!
-		boolean playerXComputer = true;
-		boolean playerOComputer = true;
-		
-		
-		Scanner keyboard = new Scanner(System.in);
-		
-		int rowLength = 7;
-		int columnLength = 6;
-		byte[][] board = new byte[rowLength][columnLength]; // board[col][row] is the correct use order2
-		int sentinel = 1;
-		
-		while (sentinel == 1) {
-			int gameLength = 0;
-			String player = "X";
-			
-			printBoard(board);
-			while (gameLength < rowLength * columnLength) {
-				int[] moveChoiceCoordinates = new int[2];
-				if (player.equals("X") & playerXComputer | player.equals("O") & playerOComputer) moveChoiceCoordinates = computerMoveCoordinates(board);
-				else moveChoiceCoordinates = userMoveCoordinates(board, player);
-				
-				changeBoard(board, moveChoiceCoordinates, player);
-				printBoard(board);
-				if (winningConditionCheck(board, moveChoiceCoordinates, player)) {
-					System.out.println("Player " + player + " has won!");
-					System.out.println();
-					break;
-				}
-				
-				player = player.equals("X") ? "O" : "X";
-				gameLength++;
-				
-				if (gameLength == rowLength * columnLength) {
-					System.out.println("Draw!");
-				}
-			}
-			
-			System.out.print("1 - play again, 2 - exit: ");
-			sentinel = keyboard.nextInt();
-			
-			//clear board
-			clearBoard(board);
-		}
-	}
 }
