@@ -6,7 +6,7 @@ Doing this gets access to the LOS calculator
 
 Rules: 
 
--Grid size of 7 across, 6 down
+-Standard Grid size of 7 across, 6 down
 
 -30 seconds + 3 seconds per move
 
@@ -14,7 +14,7 @@ Rules:
 
 -512 mb of ram
 
--multithreading allowed
+-multithreading allowed. I'm probably not going to use because I don't know how
 
 -no opening book (prewritten moves played at the start of a game)
 
