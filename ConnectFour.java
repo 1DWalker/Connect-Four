@@ -1,12 +1,21 @@
 import java.lang.System; //Time
 import java.util.Scanner;
-//import org.apache.commons.math3.special.Erf; //For Likelihood of Superiority test. Test to see how LOS behaves, then decide how to use it.
+import org.apache.commons.math3.special.Erf; //For Likelihood of Superiority test. Test to see how LOS behaves, then decide how to use it.
 //If using apache commons math, un-comment the last line in method matchStatement
 
 public class ConnectFour {
 	
+	static long timeBegin;
+	static long totalTime;
+	static long gameLength = 0; 
+	static long totalGameLength = 0;
+	
 	public static void main(String[] args) {
-		//Options. 1 for YES, 0 for NO, unless a measure size
+		
+		AlexAI.initialize();
+		AlexAI2.initialize();
+		
+		//Options. 1 for YES, 0 for NO, unless a numerical value is required
 		int options[] = new int[7];
 		//Width of board
 		options[0] = 7;
@@ -19,16 +28,16 @@ public class ConnectFour {
 		//Switch sides after every game
 		options[4] = 1;
 		//Print board every move
-		options[5] = 1;
+		options[5] = 0;
 		//Print board & stats at the end of the game
 		options[6] = 1;
 		
 		//Time control settings	
 		long[] timeControl = new long[2];
 		//beginning time in milliseconds (1000 milliseconds = 1 second)
-		timeControl[0] = 10000;
+		timeControl[0] = 500;
 		//incremental time in milliseconds
-		timeControl[1] = 1000;
+		timeControl[1] = 50;
 		
 		//Match Type. Un-comment the one you want to use and their parameters.
 		//1. 1 game
@@ -36,7 +45,7 @@ public class ConnectFour {
 	//	oneGame(options, timeControl, switchSides);
 		
 		//2. Match with n games
-		int n = 3; //# of games
+		int n = 10000; //# of games
 		match(n, options, timeControl);
 	}
 	
@@ -44,7 +53,8 @@ public class ConnectFour {
 		int[][] board = new int[options[0]][options[1]];
 
 		do {
-			int gameLength = 0;
+			boolean newGame = true; //For the AI to initialize and clear memory for the purposes of playing a new game
+			gameLength = 0;
 			String player = "X";
 			int[] lastMoveCoordinates = {board.length, board[0].length}; //MAYBE YOUR PROGRAM NEEDS THIS. Make a move based on your opponent's move!
 			
@@ -66,12 +76,12 @@ public class ConnectFour {
 				//Take move from human/computer
 				timeStart = System.currentTimeMillis();
 				if (switchSides == 0) {
-					if (player.equals("X") & options[2] == 1) moveChoiceCoordinates =computerOneMoveCoordinates(board, lastMoveCoordinates, timeControl, playerTime[0]);
-					else if (player.equals("O") & options[3] == 1) moveChoiceCoordinates = computerTwoMoveCoordinates(board, lastMoveCoordinates, timeControl, playerTime[1]);
+					if (player.equals("X") & options[2] == 1) moveChoiceCoordinates =computerOneMoveCoordinates(board, lastMoveCoordinates, timeControl, playerTime[0], newGame);
+					else if (player.equals("O") & options[3] == 1) moveChoiceCoordinates = computerTwoMoveCoordinates(board, lastMoveCoordinates, timeControl, playerTime[1], newGame);
 					else moveChoiceCoordinates = userMoveCoordinates(board, player);
 				} else {
-					if (player.equals("O") & options[2] == 1) moveChoiceCoordinates = computerOneMoveCoordinates(board, lastMoveCoordinates, timeControl, playerTime[1]);
-					else if (player.equals("X") & options[3] == 1) moveChoiceCoordinates = computerTwoMoveCoordinates(board, lastMoveCoordinates, timeControl, playerTime[0]);
+					if (player.equals("O") & options[2] == 1) moveChoiceCoordinates = computerOneMoveCoordinates(board, lastMoveCoordinates, timeControl, playerTime[1], newGame);
+					else if (player.equals("X") & options[3] == 1) moveChoiceCoordinates = computerTwoMoveCoordinates(board, lastMoveCoordinates, timeControl, playerTime[0], newGame);
 					else moveChoiceCoordinates = userMoveCoordinates(board, player);
 				}
 				
@@ -115,6 +125,7 @@ public class ConnectFour {
 				//switch players, check for draw
 				player = player.equals("X") ? "O" : "X";
 				gameLength++;
+				if (gameLength == 2) newGame = false; //2, since the first AI plays a new game and the 2nd AI sees it as a new game as well.
 				
 				if (gameLength == options[0] * options[1]) {
 					System.out.println("Draw!");
@@ -127,18 +138,28 @@ public class ConnectFour {
 	
 	//Can combine method oneGame and method match but I'm too lazy and it doesn't really matter
 	public static void match(int n, int[] options, long[] timeControl) {
+		timeBegin = System.currentTimeMillis();
+		
 		int[][] board = new int[options[0]][options[1]];
+		int i = 0; //counting unit
+		//These in perspective of player 1: the one that plays first in the match, or computer # one if computers are playing
+		int wins = 0;
+		int draws = 0;
+		int losses = 0;
+		int numberOfGames = 0;
 		
 		do {
+			numberOfGames += n;
 			int switchSides = 0;
-			int i = 0; //counting unit
-			//These in perspective of player 1: the one that plays first in the match, or computer # one if computers are playing
-			int wins = 0;
-			int draws = 0;
-			int losses = 0;
+//			int i = 0; //counting unit
+//			//These in perspective of player 1: the one that plays first in the match, or computer # one if computers are playing
+//			int wins = 0;
+//			int draws = 0;
+//			int losses = 0;
 	
 			do {
-				int gameLength = 0;
+				boolean newGame = true; //For the AI to initialize and clear memory for the purposes of playing a new game
+				gameLength = 0;
 				String player = "X";
 				int[] lastMoveCoordinates = {board.length, board[0].length}; //MAYBE YOUR PROGRAM NEEDS THIS. Make a move based on your opponent's move!
 				
@@ -160,12 +181,12 @@ public class ConnectFour {
 					//Take move from human/computer
 					timeStart = System.currentTimeMillis();
 					if (switchSides == 0) {
-						if (player.equals("X") & options[2] == 1) moveChoiceCoordinates = computerOneMoveCoordinates(board, lastMoveCoordinates, timeControl, playerTime[0]);
-						else if (player.equals("O") & options[3] == 1) moveChoiceCoordinates = computerTwoMoveCoordinates(board, lastMoveCoordinates, timeControl, playerTime[1]);
+						if (player.equals("X") & options[2] == 1) moveChoiceCoordinates = computerOneMoveCoordinates(board, lastMoveCoordinates, timeControl, playerTime[0], newGame);
+						else if (player.equals("O") & options[3] == 1) moveChoiceCoordinates = computerTwoMoveCoordinates(board, lastMoveCoordinates, timeControl, playerTime[1], newGame);
 						else moveChoiceCoordinates = userMoveCoordinates(board, player);
 					} else {
-						if (player.equals("O") & options[2] == 1) moveChoiceCoordinates = computerOneMoveCoordinates(board, lastMoveCoordinates, timeControl, playerTime[1]);
-						else if (player.equals("X") & options[3] == 1) moveChoiceCoordinates = computerTwoMoveCoordinates(board, lastMoveCoordinates, timeControl, playerTime[0]);
+						if (player.equals("O") & options[2] == 1) moveChoiceCoordinates = computerOneMoveCoordinates(board, lastMoveCoordinates, timeControl, playerTime[1], newGame);
+						else if (player.equals("X") & options[3] == 1) moveChoiceCoordinates = computerTwoMoveCoordinates(board, lastMoveCoordinates, timeControl, playerTime[0], newGame);
 						else moveChoiceCoordinates = userMoveCoordinates(board, player);
 					}
 					
@@ -190,8 +211,9 @@ public class ConnectFour {
 						}			
 							
 						if (options[6] == 1) {
+							totalGameLength += gameLength;
 							System.out.println("Player " + player + " wins on time!");
-							matchStatement(wins, draws, losses, i, n);
+							matchStatement(wins, draws, losses, i, numberOfGames);
 							System.out.println();
 						}	
 						break;
@@ -205,12 +227,12 @@ public class ConnectFour {
 					
 					//Check win conditions
 					if (winningConditionCheck(board, moveChoiceCoordinates, player)) {
-
-						
 						if (player.equals("X") & switchSides == 0) wins++;
 						else if (player.equals("O") & switchSides == 1) wins++;
 						else losses++;
+						
 						i++;
+						totalGameLength += gameLength;
 						
 						if (options[5] == 0 & options[6] == 1) {
 							timeStatement(options, playerTime, timeControl, switchSides);
@@ -219,7 +241,7 @@ public class ConnectFour {
 						
 						if (options[6] == 1) {
 							System.out.println("Player " + player + " wins!");
-							matchStatement(wins, draws, losses, i, n);
+							matchStatement(wins, draws, losses, i, numberOfGames);
 							System.out.println();
 						}
 						
@@ -233,14 +255,17 @@ public class ConnectFour {
 					//switch players, check for draw
 					player = player.equals("X") ? "O" : "X";
 					gameLength++;
+					if (gameLength == 2) newGame = false; //2, since the first AI plays a new game and the 2nd AI sees it as a new game as well.
 					
 					if (gameLength == options[0] * options[1]) {
+						totalGameLength += gameLength;
 						draws++;
 						i++;
 						
-						if (options[5] == 0 & options[6] == 1) {
+						if (options[6] == 1) {
+							printBoard(board);
 							System.out.println("Draw!");
-							matchStatement(wins, draws, losses, i, n);
+							matchStatement(wins, draws, losses, i, numberOfGames);
 						}
 					}
 				}
@@ -248,18 +273,26 @@ public class ConnectFour {
 				clearBoard(board);
 				//Switch Sides if option 4 is on
 				if (options[4] == 1) switchSides = switchSides == 0 ? 1 : 0;
-			} while (i < n);
+				
+			} while (i < numberOfGames);
 			
-			if (options[6] == 0) matchStatement(wins, draws, losses, i, n);
+			if (options[6] == 0) matchStatement(wins, draws, losses, i, numberOfGames);
+			
+			totalTime = System.currentTimeMillis();
+			System.out.println("Total time: " + (totalTime - timeBegin));
 		} while (playAnotherGame());
 	}
 	
-	public static int[] computerOneMoveCoordinates(int[][] board, int[] lastMoveCoordinates, long[] timeControl, long playerTime) {
-		return ComputerOne.makeMove(board, lastMoveCoordinates, timeControl, playerTime);
+	public static int[] computerOneMoveCoordinates(int[][] board, int[] lastMoveCoordinates, long[] timeControl, long playerTime, boolean newGame) {
+		return AlexAI.computerMove(board, lastMoveCoordinates, timeControl, playerTime, newGame);
+//		return AlexAI2.computerMove(board, lastMoveCoordinates, timeControl, playerTime, newGame);
+//		return AlexAITest.computerMove(board, lastMoveCoordinates, timeControl, playerTime, newGame);
 	}
 	
-	public static int[] computerTwoMoveCoordinates(int[][] board, int[] lastMoveCoordinates, long[] timeControl, long playerTime) {
-		return ComputerTwo.makeMove(board, lastMoveCoordinates, timeControl, playerTime);
+	public static int[] computerTwoMoveCoordinates(int[][] board, int[] lastMoveCoordinates, long[] timeControl, long playerTime, boolean newGame) {
+//		return AlexAI.computerMove(board, lastMoveCoordinates, timeControl, playerTime, newGame);
+
+		return AlexAI2.computerMove(board, lastMoveCoordinates, timeControl, playerTime, newGame);
 	}
 	
 	public static void printBoard(int[][] board) {
@@ -340,19 +373,21 @@ public class ConnectFour {
 		//Information on elo can be found here: https://en.wikipedia.org/wiki/Elo_rating_system , https://en.wikipedia.org/wiki/Chess_rating_system
 		System.out.println("Elo difference: " + (-400.0 * Math.log((1.0 / ((wins + 0.5 * draws) / i)) - 1) / Math.log(10.0)));
 		//https://chessprogramming.wikispaces.com/Match+Statistics
-		//System.out.println("LOS: " + (0.5 + 0.5 * Erf.erf((wins - losses) / Math.sqrt(2.0 * (wins + losses))))); 
+		System.out.println("LOS: " + (0.5 + 0.5 * Erf.erf((wins - losses) / Math.sqrt(2.0 * (wins + losses))))); 
+		System.out.println("Game length: " + gameLength); 
+		System.out.println("Average game length: " + (double) totalGameLength / i); 
 	}
 	
 	public static void timeStatement (int[] options, long[] playerTime, long[] timeControl, int switchSides) {
 		if (options[3] == 1 & switchSides == 0) System.out.print("C1: ");
 		else if (options[4] == 1 & switchSides == 1) System.out.print("C2: ");
 		else System.out.print("H: ");		
-		System.out.print((double) playerTime[0] / 1000 + "s, ");
+		System.out.print((double) playerTime[0] / 1000 + "s +" + timeControl[1] / 1000 + "s, ");
 		
 		if (options[3] == 1 & switchSides == 1) System.out.print("C1: ");
 		else if (options[4] == 1 & switchSides == 0) System.out.print("C2: ");
 		else System.out.print("H: ");	
-		System.out.println((double) playerTime[1] / 1000 + "s. Incre: " + (double) timeControl[1] / 1000);
+		System.out.println((double) playerTime[1] / 1000 + "s +" + timeControl[1] / 1000 + "s. Incre: " + (double) timeControl[1] / 1000);
 	}
 	
 	//If you have a faster version, include it in your engine! This is just something makes sense
