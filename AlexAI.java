@@ -288,12 +288,6 @@ public class AlexAI {
     		
     		currentColumnCount[currentColumn] = currentColumnCount[currentColumn] + 1;
     		currentBoard[currentColumn][boardHeight - currentColumnCount[currentColumn]] = currentPlayer;
-    		
-    		if (winningConditionCheck(currentPlayer, currentColumn, boardHeight - currentColumnCount[currentColumn])) {
-    			if (currentPlayer == savedPlayer) return winScore;
-    			else return lossScore;
-    		}
-    		
     		currentPlayer = currentPlayer == 1 ? 2 : 1;
     	}
     	
