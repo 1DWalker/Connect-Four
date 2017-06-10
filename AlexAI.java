@@ -244,8 +244,8 @@ public class AlexAI {
     
     public static double defaultPolicy(int newMemoryPosition) {
     	double winScore = 1;
-    	double drawScore = 0.5;
-    	double lossScore = 0;
+    	double drawScore = 0;
+    	double lossScore = -1;
     	
  		if (currentColumnCount[currentColumn] > 0) {
 	    	if (winningConditionCheck(currentPlayer, currentColumn, boardHeight - currentColumnCount[currentColumn])) {
@@ -298,7 +298,7 @@ public class AlexAI {
     	do {
     		totalScore[newMemoryPosition] += result;
     		totalVisits[newMemoryPosition] = totalVisits[newMemoryPosition] + 1;
-        	result = 1 - result;
+        	result *= -1;
     		newMemoryPosition = parentNodes[newMemoryPosition];
     	} while (newMemoryPosition != rootMemoryPosition);
     	
@@ -307,7 +307,7 @@ public class AlexAI {
     }
     
     public static int[] bestNode() {
-    	double mostVisits = -1;
+    	double mostVisits = -2;
     	int bestNode = 0; 
     		
     	for (int i = 0; i < boardWidth; i++) {
@@ -436,7 +436,7 @@ public class AlexAI {
     }
     
     public static int bestChild() {
-		double bestChildScore = -1; 
+		double bestChildScore = -2; 
 		int bestChild = 0;
 		
 		for(int i = 0; i < boardWidth; i++) {
@@ -448,8 +448,9 @@ public class AlexAI {
 			double percentScore = score / visits;
 			int parentVisits = totalVisits[currentMemoryPosition];
 			double exploration = Math.log(parentVisits) / visits;
-			double childScore = percentScore + Math.sqrt(exploration * Math.min(0.25, visits * percentScore * (1 - percentScore) + 2 * exploration));
-					
+//			double childScore = percentScore + 2 * Math.sqrt(exploration * Math.min(0.25, visits * (1 - Math.pow(percentScore, 2)) + 2 * exploration));		
+			double childScore = percentScore + Math.sqrt(exploration);
+			
 			if (childScore > bestChildScore) {
 				bestChildScore = childScore; 
 				bestChild = i;
