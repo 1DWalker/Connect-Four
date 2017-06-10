@@ -215,7 +215,7 @@ public class AlexAI {
     	
     	return true;
     	
-//    	if (simulations <= 400) return true;
+//    	if (simulations <= 1000) return true;
 //    	return false;
     }
     
@@ -379,6 +379,11 @@ public class AlexAI {
     		}
     		
     		if (currentColumnCount[i] < boardHeight & childNodes[currentMemoryPosition][i] == -1) {
+    			if (winningConditionCheck(currentPlayer, i, boardHeight - currentColumnCount[i] - 1) || winningConditionCheck(currentPlayer == 1 ? 0 : 1, i, boardHeight - currentColumnCount[i] - 1)) {
+    				currentColumn = i;
+    				return false;
+    			}
+    			
     			possibleMoves[numberOfPossibleMoves] = i;
     			numberOfPossibleMoves++;
     		}
