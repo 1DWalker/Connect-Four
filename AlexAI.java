@@ -44,6 +44,7 @@ public class AlexAI {
 	static int[] parentNodes = new int[size];
 	static double[] totalScore = new double[size];
 	static int[] totalVisits = new int[size];
+	static boolean[] fullyExpanded = new boolean[size];
 	static boolean[] terminalNodes = new boolean[size];
 	static boolean[] flagNodes = new boolean[size];
 	//static int[] gameLengthNodes = new int[size]; //Use for evaluation?
@@ -137,6 +138,7 @@ public class AlexAI {
     		parentNodes[i] = -1;
     		totalScore[i] = 0;
     		totalVisits[i] = 0;
+    		fullyExpanded[i] = false;
     		terminalNodes[i] = false;
     		symmetry[i] = false;
     	}
@@ -186,6 +188,7 @@ public class AlexAI {
 	    		parentNodes[i] = -1;
 	    		totalScore[i] = 0;
 	    		totalVisits[i] = 0;
+	    		fullyExpanded[i] = false;
 	    		terminalNodes[i] = false;
 	    		symmetry[i] = false;
 			}
@@ -289,6 +292,8 @@ public class AlexAI {
     		currentColumnCount[currentColumn] = currentColumnCount[currentColumn] + 1;
     		currentBoard[currentColumn][boardHeight - currentColumnCount[currentColumn]] = currentPlayer;
     		currentPlayer = currentPlayer == 1 ? 2 : 1;
+    		
+//    		evaluate(currentPlayer, currentBoard);
     	}
     	
     	return drawScore;
@@ -364,6 +369,8 @@ public class AlexAI {
     }
     
     public static boolean fullyExpanded() {
+    	if (fullyExpanded[currentMemoryPosition]) return true;
+    	
     	int[] possibleMoves = new int[boardWidth];
     	int numberOfPossibleMoves = 0;
     	
@@ -373,8 +380,9 @@ public class AlexAI {
     		}
     		
     		if (currentColumnCount[i] < boardHeight & childNodes[currentMemoryPosition][i] == -1) {
-    			if (winningConditionCheck(currentPlayer, i, boardHeight - currentColumnCount[i] - 1) || winningConditionCheck(currentPlayer == 1 ? 0 : 1, i, boardHeight - currentColumnCount[i] - 1)) {
+    			if (winningConditionCheck(currentPlayer, i, boardHeight - currentColumnCount[i] - 1) || winningConditionCheck(currentPlayer == 1 ? 2 : 1, i, boardHeight - currentColumnCount[i] - 1)) {
     				currentColumn = i;
+    				fullyExpanded[currentMemoryPosition] = true; //Ignore this step
     				return false;
     			}
     			
@@ -464,6 +472,30 @@ public class AlexAI {
     	
     	return currentMemoryPosition;
     }
+    
+//    public static double evaluate(int playerNumber, int[][] board) {
+//    	double score = 0;
+//    	
+//    	rowByRow: 
+//    	for (int col = 0; col < boardWidth; col++) {
+//    		boolean oddWins = false;
+//    		boolean evenWins = false;
+//    		for (int row = boardHeight - 1; row < boardHeight; row++) {
+//    			if (board[col][row] == 0) break rowByRow;
+//    		
+//    			
+//    			if (winningConditionCheck(playerNumber, col, row)) {
+//    				if (row % 2 == 0) evenWins = true;
+//    				else oddWins = true;
+//    				
+//    				if (evenWins & oddWins) score++;
+//    			}
+//    		}
+//    	}
+//    	
+//    	if (score > 0) System.out.println(score);
+//    	return score;
+//    }
     
     public static void setRootBoard(int[][] board) {
     	for (int col = 0; col < boardWidth; col++) {
