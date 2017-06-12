@@ -380,14 +380,24 @@ public class AlexAI {
     		}
     		
     		if (currentColumnCount[i] < boardHeight & childNodes[currentMemoryPosition][i] == -1) {
-    			if (winningConditionCheck(currentPlayer, i, boardHeight - currentColumnCount[i] - 1) || winningConditionCheck(currentPlayer == 1 ? 2 : 1, i, boardHeight - currentColumnCount[i] - 1)) {
+    			if (winningConditionCheck(currentPlayer, i, boardHeight - currentColumnCount[i] - 1)) {
     				currentColumn = i;
-    				fullyExpanded[currentMemoryPosition] = true; //Ignore this step
+    				fullyExpanded[currentMemoryPosition] = true; //Ignore this step for the next time
     				return false;
     			}
     			
     			possibleMoves[numberOfPossibleMoves] = i;
     			numberOfPossibleMoves++;
+    		}
+    	}
+    	
+    	for (int i = 0; i < boardWidth; i++) {
+    		if (currentColumnCount[i] < boardHeight & childNodes[currentMemoryPosition][i] == -1) {
+    			if (winningConditionCheck(currentPlayer == 1 ? 2 : 1, i, boardHeight - currentColumnCount[i] - 1)) {
+    				currentColumn = i;
+    				fullyExpanded[currentMemoryPosition] = true; //Ignore this step for the next time
+    				return false;
+    			}
     		}
     	}
 		
