@@ -6,8 +6,9 @@ public class AlexAI {
 	
 	static Random randomInt = new Random();
 	
-	static int maxMemory = 536870912; //In bytes. 512 mb 
-//	static int maxMemory = 50000000;
+//	static int maxMemory = 1073741824;
+//	static int maxMemory = 536870912; //In bytes. 512 mb 
+	static int maxMemory = 50000000;
 	static int boardWidth = 7;
 	static int boardHeight = 6;
 	
@@ -62,8 +63,8 @@ public class AlexAI {
 	static boolean[] symmetry = new boolean[size];
 	
 	//Extras
-	static boolean output = true;
-//	static boolean output = false;
+//	static boolean output = true;
+	static boolean output = false;
 	
 	public static void initialize() {}
 	
@@ -234,11 +235,11 @@ public class AlexAI {
     	
     	boolean playOn = false;
     	for (int i = 0; i < boardWidth; i++) {
-    		if (rootColumnCount[i] == boardHeight) continue;
-    		if (childNodes[rootMemoryPosition][i] == -1) {
+    		if (!fullyExpanded[rootMemoryPosition]) {
     			playOn = true;
-    			continue;
+    			break;
     		}
+    		if (rootColumnCount[i] == boardHeight | childNodes[rootMemoryPosition][i] == -1) continue; 		 		
     		if (forcedWin[childNodes[rootMemoryPosition][i]]) return false;
         	if (!(forcedDraw[childNodes[rootMemoryPosition][i]] | forcedLoss[childNodes[rootMemoryPosition][i]])) playOn = true;
     	}
@@ -500,6 +501,7 @@ public class AlexAI {
 			return false;
 		}
 		
+		fullyExpanded[currentMemoryPosition] = true;
     	return true;
     }
     
