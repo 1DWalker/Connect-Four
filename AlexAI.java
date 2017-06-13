@@ -6,8 +6,8 @@ public class AlexAI {
 	
 	static Random randomInt = new Random();
 	
-//	static int maxMemory = 536870912; //In bytes. 512 mb 
-	static int maxMemory = 50000000;
+	static int maxMemory = 536870912; //In bytes. 512 mb 
+//	static int maxMemory = 50000000;
 	static int boardWidth = 7;
 	static int boardHeight = 6;
 	
@@ -48,6 +48,9 @@ public class AlexAI {
 	static int[] totalVisits = new int[size];
 	static boolean[] fullyExpanded = new boolean[size];
 	static boolean[] terminalNodes = new boolean[size];
+	static boolean[] forcedWin = new boolean[size];
+	static boolean[] forcedLoss = new boolean[size];
+	static boolean[] forcedDraw = new boolean[size];
 	static boolean[] flagNodes = new boolean[size];
 	
 	//Others
@@ -59,8 +62,8 @@ public class AlexAI {
 	static boolean[] symmetry = new boolean[size];
 	
 	//Extras
-//	static boolean output = true;
-	static boolean output = false;
+	static boolean output = true;
+//	static boolean output = false;
 	
 	public static void initialize() {}
 	
@@ -149,6 +152,9 @@ public class AlexAI {
     		totalVisits[i] = 0;
     		fullyExpanded[i] = false;
     		terminalNodes[i] = false;
+    		forcedWin[i] = false;
+    		forcedLoss[i] = false;
+    		forcedDraw[i] = false;
     		symmetry[i] = false;
     	}
     	
@@ -166,7 +172,6 @@ public class AlexAI {
 		
 		int memoryPosition = rootMemoryPosition;
     	do {
-    		
     		boolean childFound;
     		do {
     			childFound = false;
@@ -201,6 +206,9 @@ public class AlexAI {
 	    		totalVisits[i] = 0;
 	    		fullyExpanded[i] = false;
 	    		terminalNodes[i] = false;
+	    		forcedWin[i] = false;
+	    		forcedLoss[i] = false;
+	    		forcedDraw[i] = false;
 	    		symmetry[i] = false;
 			}
 		}
@@ -223,6 +231,19 @@ public class AlexAI {
     public static boolean computationalBudget(long[] timeControl, long playerTime) {
     	timeEnd = System.currentTimeMillis();
     	simulations++;
+    	
+    	boolean playOn = false;
+    	for (int i = 0; i < boardWidth; i++) {
+    		if (rootColumnCount[i] == boardHeight) continue;
+    		if (childNodes[rootMemoryPosition][i] == -1) {
+    			playOn = true;
+    			continue;
+    		}
+    		if (forcedWin[childNodes[rootMemoryPosition][i]]) return false;
+        	if (!(forcedDraw[childNodes[rootMemoryPosition][i]] | forcedLoss[childNodes[rootMemoryPosition][i]])) playOn = true;
+    	}
+    	  
+    	if (!playOn) return false;
     	
     	if (playerTime - (timeEnd - timeBegin) <= timeTarget) return false;
 //    	if (timeEnd - timeBegin >= 1000) return false; //Time per move.
@@ -260,14 +281,21 @@ public class AlexAI {
  		if (currentColumnCount[currentColumn] > 0) {
 	    	if (winningConditionCheck(currentPlayer, currentColumn, boardHeight - currentColumnCount[currentColumn])) {
 	    		terminalNodes[newMemoryPosition] = true;
+	    		forcedWin[newMemoryPosition] = true;
 	    		return winScore;
 	    	}
+ 		}
+ 		
+ 		if (fullBoard()) {
+ 			terminalNodes[newMemoryPosition] = true;
+ 			forcedDraw[newMemoryPosition] = true;
+ 			return drawScore;
  		}
  		
  		savedPlayer = currentPlayer;
 		currentPlayer = currentPlayer == 1 ? 2 : 1;
 		
-    	while (!fullBoard()) {
+    	do {
      	  	int[] possibleMoves = new int[boardWidth];
      	  	int numberOfPossibleMoves = 0;
      	  	
@@ -301,7 +329,7 @@ public class AlexAI {
     		currentPlayer = currentPlayer == 1 ? 2 : 1;
     		
 //    		evaluate(currentPlayer, currentBoard);
-    	}
+    	} while (!fullBoard());
     	
     	return drawScore;
     }
@@ -321,6 +349,33 @@ public class AlexAI {
     		totalVisits[newMemoryPosition]++;
         	result *= -1;
         	perspective *= -1;
+        	
+        	//Proof number backpropagation
+        	if (forcedWin[newMemoryPosition]) forcedLoss[parentNodes[newMemoryPosition]] = true; 
+        	else if (forcedDraw[newMemoryPosition]) {
+            	if (forcedDraw[newMemoryPosition]) {
+            		forcedDraw[parentNodes[newMemoryPosition]] = true;
+                	for (int i = 0; i < boardWidth; i++) {
+                		if (childNodes[parentNodes[newMemoryPosition]][i] == -1) continue;
+                		if (!(forcedDraw[childNodes[parentNodes[newMemoryPosition]][i]] | forcedLoss[childNodes[parentNodes[newMemoryPosition]][i]])) {
+                    		forcedDraw[parentNodes[newMemoryPosition]] = false;
+                			break;
+                		}
+                	}
+            	}
+        	} else {
+            	if (forcedLoss[newMemoryPosition]) {
+            		forcedWin[parentNodes[newMemoryPosition]] = true;
+                	for (int i = 0; i < boardWidth; i++) {
+                		if (childNodes[parentNodes[newMemoryPosition]][i] == -1) continue;
+                		if (!forcedLoss[childNodes[parentNodes[newMemoryPosition]][i]]) {
+                    		forcedWin[parentNodes[newMemoryPosition]] = false;
+                			break;
+                		}
+                	}
+            	}
+        	}
+        	
     		newMemoryPosition = parentNodes[newMemoryPosition];
     	} while (newMemoryPosition != rootMemoryPosition);
     	
@@ -333,20 +388,41 @@ public class AlexAI {
     	int bestNode = 0; 
     		
     	for (int i = 0; i < boardWidth; i++) {
-    		if (childNodes[rootMemoryPosition][i] > -1 ) {
+    		if (childNodes[rootMemoryPosition][i] != -1 ) {
+    			if (forcedWin[childNodes[rootMemoryPosition][i]]) {
+					bestNode = i;
+					mostVisits = 1.0;
+					break;
+    			}
+    			
+    			if (mostVisits != -2) {
+        			if (forcedDraw[childNodes[rootMemoryPosition][bestNode]] & forcedLoss[childNodes[rootMemoryPosition][i]]) continue;
+    			}
+    			
     			double totalScore = winScore * winCount[childNodes[rootMemoryPosition][i]] + lossScore * lossCount[childNodes[rootMemoryPosition][i]] + drawScore * drawCount[childNodes[rootMemoryPosition][i]];
-	      		if (totalScore / totalVisits[childNodes[rootMemoryPosition][i]] > mostVisits) {
+    			if (totalScore / totalVisits[childNodes[rootMemoryPosition][i]] > mostVisits) {
 	    			mostVisits = totalScore / totalVisits[childNodes[rootMemoryPosition][i]];
 	    			bestNode = i;
 	    		}
     		}
     	}
     	
+    	if (forcedDraw[childNodes[rootMemoryPosition][bestNode]]) mostVisits = 0;
+    	if (forcedLoss[childNodes[rootMemoryPosition][bestNode]]) mostVisits = -1.0;
+    	
     	if (output) {
-        	System.out.println("Player: " + rootPlayer + "	 Move played: " + (bestNode + 1) + " 	Score: " + mostVisits);
+        	System.out.println("Player: " + rootPlayer + "	 Move played: " + (bestNode + 1) + " 	Score: " + (mostVisits + 1) / 2);
         	
+			if (forcedWin[childNodes[rootMemoryPosition][bestNode]]) {
+				System.out.println("Forced win");
+			} else if (forcedLoss[childNodes[rootMemoryPosition][bestNode]]) {
+        		System.out.println("Forced loss");
+        	} else if (forcedDraw[childNodes[rootMemoryPosition][bestNode]]) {
+        		System.out.println("Forced draw");
+        	}
+			
         	for (int i = 0; i < boardWidth; i++) {
-        		if (childNodes[rootMemoryPosition][i] != -1) System.out.println((i + 1) + "	Visits: " + totalVisits[childNodes[rootMemoryPosition][i]] + "	 Score: " + ((winScore * winCount[childNodes[rootMemoryPosition][i]] + lossScore * lossCount[childNodes[rootMemoryPosition][i]] + drawScore * drawCount[childNodes[rootMemoryPosition][i]]) / totalVisits[childNodes[rootMemoryPosition][i]]) + "	 Wins: "  + winCount[childNodes[rootMemoryPosition][i]]);
+        		if (childNodes[rootMemoryPosition][i] != -1) System.out.println((i + 1) + "	Visits: " + totalVisits[childNodes[rootMemoryPosition][i]] + "	 Score: " + (((winScore * winCount[childNodes[rootMemoryPosition][i]] + lossScore * lossCount[childNodes[rootMemoryPosition][i]] + drawScore * drawCount[childNodes[rootMemoryPosition][i]]) / totalVisits[childNodes[rootMemoryPosition][i]]) + 1) / 2 + "	 Wins: "  + winCount[childNodes[rootMemoryPosition][i]]);
         	}
         	
         	System.out.println((double) simulations / (timeEnd - timeBegin) + " kN/s");
