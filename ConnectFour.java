@@ -28,16 +28,16 @@ public class ConnectFour {
 		//Switch sides after every game
 		options[4] = 1;
 		//Print board every move
-		options[5] = 0;
+		options[5] = 1;
 		//Print board & stats at the end of the game
 		options[6] = 1;
 		
 		//Time control settings	
 		long[] timeControl = new long[2];
 		//beginning time in milliseconds (1000 milliseconds = 1 second)
-		timeControl[0] = 500;
+		timeControl[0] = 60000;
 		//incremental time in milliseconds
-		timeControl[1] = 50;
+		timeControl[1] = 6000;
 		
 		//Match Type. Un-comment the one you want to use and their parameters.
 		//1. 1 game
@@ -45,7 +45,7 @@ public class ConnectFour {
 	//	oneGame(options, timeControl, switchSides);
 		
 		//2. Match with n games
-		int n = 10000; //# of games
+		int n = 100000; //# of games
 		match(n, options, timeControl);
 	}
 	
@@ -263,6 +263,7 @@ public class ConnectFour {
 						i++;
 						
 						if (options[6] == 1) {
+							timeStatement(options, playerTime, timeControl, switchSides);
 							printBoard(board);
 							System.out.println("Draw!");
 							matchStatement(wins, draws, losses, i, numberOfGames);
@@ -382,12 +383,12 @@ public class ConnectFour {
 		if (options[3] == 1 & switchSides == 0) System.out.print("C1: ");
 		else if (options[4] == 1 & switchSides == 1) System.out.print("C2: ");
 		else System.out.print("H: ");		
-		System.out.print((double) playerTime[0] / 1000 + "s +" + timeControl[1] / 1000 + "s, ");
+		System.out.print((double) playerTime[0] / 1000 + "s +" + (double) timeControl[1] / 1000 + "s, ");
 		
 		if (options[3] == 1 & switchSides == 1) System.out.print("C1: ");
 		else if (options[4] == 1 & switchSides == 0) System.out.print("C2: ");
 		else System.out.print("H: ");	
-		System.out.println((double) playerTime[1] / 1000 + "s +" + timeControl[1] / 1000 + "s. Incre: " + (double) timeControl[1] / 1000);
+		System.out.println((double) playerTime[1] / 1000 + "s +" + (double) timeControl[1] / 1000 + "s. Incre: " + (double) timeControl[1] / 1000);
 	}
 	
 	//If you have a faster version, include it in your engine! This is just something makes sense
