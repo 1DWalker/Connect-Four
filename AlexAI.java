@@ -7,8 +7,8 @@ public class AlexAI {
 	static Random randomInt = new Random();
 	
 //	static int maxMemory = 1073741824;
-	static int maxMemory = 536870912; //In bytes. 512 mb 
-//	static int maxMemory = 50000000;
+//	static int maxMemory = 536870912; //In bytes. 512 mb 
+	static int maxMemory = 50000000;
 	static int boardWidth = 7;
 	static int boardHeight = 6;
 	
@@ -411,8 +411,32 @@ public class AlexAI {
     	if (forcedDraw[childNodes[rootMemoryPosition][bestNode]]) mostVisits = 0;
     	if (forcedLoss[childNodes[rootMemoryPosition][bestNode]]) mostVisits = -1.0;
     	
+    	//Best reply
+    	double mostVisitsReply = -2;
+    	int bestNodeReply = 0;
+    	
+    	for (int i = 0; i < boardWidth; i++) {
+    		if (childNodes[childNodes[rootMemoryPosition][bestNode]][i] != -1 ) {
+    			if (forcedWin[childNodes[childNodes[rootMemoryPosition][bestNode]][i]]) {
+					bestNodeReply = i;
+					mostVisitsReply = 1.0;
+					break;
+    			}
+    			
+    			if (mostVisitsReply != -2) {
+        			if (forcedDraw[childNodes[childNodes[rootMemoryPosition][bestNode]][bestNodeReply]] & forcedLoss[childNodes[childNodes[rootMemoryPosition][bestNode]][i]]) continue;
+    			}
+    			
+    			double totalScore = winScore * winCount[childNodes[childNodes[rootMemoryPosition][bestNode]][i]] + lossScore * lossCount[childNodes[childNodes[rootMemoryPosition][bestNode]][i]] + drawScore * drawCount[childNodes[childNodes[rootMemoryPosition][bestNode]][i]];
+    			if (totalScore / totalVisits[childNodes[childNodes[rootMemoryPosition][bestNode]][i]] > mostVisitsReply) {
+	    			mostVisitsReply = totalScore / totalVisits[childNodes[childNodes[rootMemoryPosition][bestNode]][i]];
+	    			bestNodeReply = i;
+	    		}
+    		}
+    	}
+    	
     	if (output) {
-        	System.out.println("Player: " + rootPlayer + "	 Move played: " + (bestNode + 1) + " 	Score: " + (mostVisits + 1) / 2);
+        	System.out.println("Player: " + rootPlayer + " 	Score: " + (mostVisits + 1) / 2 + "	 Move played: " + (bestNode + 1) + "	 Best Reply: " + (bestNodeReply + 1));
         	
 			if (forcedWin[childNodes[rootMemoryPosition][bestNode]]) {
 				System.out.println("Forced win");
@@ -495,13 +519,14 @@ public class AlexAI {
     			}
     		}
     	}
+    	
+    	if (numberOfPossibleMoves == 1) fullyExpanded[currentMemoryPosition] = true;
 		
 		if (numberOfPossibleMoves > 0) {
 			currentColumn = possibleMoves[randomInt.nextInt(numberOfPossibleMoves)];
 			return false;
 		}
 		
-		fullyExpanded[currentMemoryPosition] = true;
     	return true;
     }
     
@@ -563,11 +588,18 @@ public class AlexAI {
 			double percentScore = score / visits;
 			int parentVisits = totalVisits[currentMemoryPosition];
 			double exploration = Math.log(parentVisits) / visits;
-//			double childScore = percentScore + 2 * Math.sqrt(exploration * Math.min(0.25, visits * (1 - Math.pow(percentScore, 2)) + 2 * exploration));		
-//			double tune = Math.min(0.25, 0.5 * exploration + (Math.pow(winScore, 2) * winCount[childNodes[currentMemoryPosition][i]] + Math.pow(lossScore, 2) * lossCount[childNodes[currentMemoryPosition][i]] + Math.pow(drawScore, 2) * drawCount[childNodes[currentMemoryPosition][i]]) / visits - Math.pow(percentScore, 2));
+//			double childScore = percentScore + Math.sqrt(exploration * Math.min(0.25, visits * (1 - Math.pow(percentScore, 2)) + 2 * exploration));		
+//			double tune = Math.min(0.25, exploration + (Math.pow(winScore, 2) * winCount[childNodes[currentMemoryPosition][i]] + Math.pow(lossScore, 2) * lossCount[childNodes[currentMemoryPosition][i]] + Math.pow(drawScore, 2) * drawCount[childNodes[currentMemoryPosition][i]]) / visits - Math.pow(percentScore, 2));
 //			if (tune != 0.25) System.out.println(tune);
-//			double childScore = percentScore + 4 * Math.sqrt(exploration * tune);
-			double childScore = percentScore + Math.sqrt(exploration);
+//			double childScore = percentScore + Math.sqrt(exploration * tune);
+			double childScore = percentScore + 0.9 * Math.sqrt(exploration);
+			
+//			if ((0.5 * exploration + (Math.pow(winScore, 2) * winCount[childNodes[currentMemoryPosition][i]] + Math.pow(lossScore, 2) * lossCount[childNodes[currentMemoryPosition][i]] + Math.pow(drawScore, 2) * drawCount[childNodes[currentMemoryPosition][i]]) / visits - Math.pow(percentScore, 2)) < 0.25) {
+//				System.out.print(visits);
+//				System.out.print("     " + 0.5 * exploration);
+//				System.out.print("    " + ((Math.pow(winScore, 2) * winCount[childNodes[currentMemoryPosition][i]] + Math.pow(lossScore, 2) * lossCount[childNodes[currentMemoryPosition][i]] + Math.pow(drawScore, 2) * drawCount[childNodes[currentMemoryPosition][i]]) / visits - Math.pow(percentScore, 2)));
+//				System.out.println("    " + (0.5 * exploration + (Math.pow(winScore, 2) * winCount[childNodes[currentMemoryPosition][i]] + Math.pow(lossScore, 2) * lossCount[childNodes[currentMemoryPosition][i]] + Math.pow(drawScore, 2) * drawCount[childNodes[currentMemoryPosition][i]]) / visits - Math.pow(percentScore, 2)));
+//			}
 			
 			if (childScore > bestChildScore) {
 				bestChildScore = childScore; 
