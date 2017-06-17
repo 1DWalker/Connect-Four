@@ -246,13 +246,13 @@ public class AlexAI {
     	  
     	if (!playOn || possibleMoves == 6) return false;
     	
-//    	if (playerTime - (timeEnd - timeBegin) <= timeTarget) return false;
-////    	if (timeEnd - timeBegin >= 1000) return false; //Time per move.
-//    	
-//    	return true;
+    	if (playerTime - (timeEnd - timeBegin) <= timeTarget) return false;
+//    	if (timeEnd - timeBegin >= 1000) return false; //Time per move.
     	
-    	if (simulations <= 1000) return true;
-    	return false;
+    	return true;
+    	
+//    	if (simulations <= 1000) return true;
+//    	return false;
     }
     
     public static int treePolicy() {
