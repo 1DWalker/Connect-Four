@@ -63,8 +63,8 @@ public class AlexAI {
 	static boolean[] symmetry = new boolean[size];
 	
 	//Extras
-	static boolean output = true;
-//	static boolean output = false;
+//	static boolean output = true;
+	static boolean output = false;
 	
 	public static void initialize() {}
 	
@@ -303,19 +303,31 @@ public class AlexAI {
      	  	//Play a move randomly
     		for (int i = 0; i < boardWidth; i++) {
     			if (currentColumnCount[i] < boardHeight) {
+    				//Play decisive moves
     				if (winningConditionCheck(currentPlayer, i, boardHeight - currentColumnCount[i] - 1)) {
     	    			if (currentPlayer == savedPlayer) return winScore;
     	    			else return lossScore;
     				}
     				
+    				
+    				//Avoid playing a move if it allows the opponent to win by playing on the same column
+            		if (currentColumnCount[i] < boardHeight - 1) {
+            			if (winningConditionCheck(currentPlayer == 1 ? 2 : 1, i, boardHeight - currentColumnCount[i] - 2)) continue;
+            		}
+            		
     				possibleMoves[numberOfPossibleMoves] = i;
     				numberOfPossibleMoves++;
     			}
     		}
     		
+    		if (numberOfPossibleMoves == 0) {
+    			if (currentPlayer == savedPlayer) return lossScore;
+    			else return winScore;
+    		}
+        		
     		currentColumn = possibleMoves[randomInt.nextInt(numberOfPossibleMoves)];
-    		
-    		//Don't give the opponent a forced win
+
+    		//Play antidecisive moves
     		for (int i = 0; i < boardWidth; i++) {
     			if (currentColumnCount[i] < boardHeight) {
     				if (winningConditionCheck(currentPlayer == 1 ? 2 : 1, i, boardHeight - currentColumnCount[i] - 1)) {
@@ -324,6 +336,7 @@ public class AlexAI {
     				}
     			}
     		}
+    		
     		
     		currentColumnCount[currentColumn] = currentColumnCount[currentColumn] + 1;
     		currentBoard[currentColumn][boardHeight - currentColumnCount[currentColumn]] = currentPlayer;
@@ -504,9 +517,7 @@ public class AlexAI {
     				fullyExpanded[currentMemoryPosition] = true; //Ignore this step for the next time
     				return false;
     			}
-    			
-    			if (!winningConditionCheck(currentPlayer == 1 ? 2 : 1, i, boardHeight - currentColumnCount[i] - 1))
-    			
+    			    			
     			possibleMoves[numberOfPossibleMoves] = i;
     			numberOfPossibleMoves++;
     		}
