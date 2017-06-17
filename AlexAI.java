@@ -6,7 +6,7 @@ public class AlexAI {
 	
 	static Random randomInt = new Random();
 	
-//	static int maxMemory = 1073741824;
+//	static int maxMemory = 673741824;
 //	static int maxMemory = 536870912; //In bytes. 512 mb 
 	static int maxMemory = 50000000;
 	static int boardWidth = 7;
@@ -505,6 +505,7 @@ public class AlexAI {
     	
     	int[] possibleMoves = new int[boardWidth];
     	int numberOfPossibleMoves = 0;
+    	int numberOfGoodMoves = 0;
     	
     	for (int i = 0; i < boardWidth; i++) {
     		if (childNodes[currentMemoryPosition][i] != -1) {
@@ -517,11 +518,30 @@ public class AlexAI {
     				fullyExpanded[currentMemoryPosition] = true; //Ignore this step for the next time
     				return false;
     			}
-    			    			
-    			possibleMoves[numberOfPossibleMoves] = i;
+    			    	
     			numberOfPossibleMoves++;
+    			
+				//Avoid playing a move if it allows the opponent to win by playing on the same column
+        		if (currentColumnCount[i] < boardHeight - 1) {
+        			if (winningConditionCheck(currentPlayer == 1 ? 2 : 1, i, boardHeight - currentColumnCount[i] - 2)) continue;
+        		}
+        		
+    			possibleMoves[numberOfGoodMoves] = i;
+    			numberOfGoodMoves++;
     		}
     	}
+    	
+		if (numberOfGoodMoves == 0) {
+//    		currentColumn = possibleMoves[randomInt.nextInt(numberOfGoodMoves)];
+    		for (int i = 0; i < boardWidth; i++) {
+        		if (currentColumnCount[i] < boardHeight & childNodes[currentMemoryPosition][i] == -1) {
+        			currentColumn = i;
+        			break;
+        		}
+    		}
+			fullyExpanded[currentMemoryPosition] = true;
+			return false;
+		}
     	
     	for (int i = 0; i < boardWidth; i++) {
     		if (currentColumnCount[i] < boardHeight & childNodes[currentMemoryPosition][i] == -1) {
@@ -535,8 +555,8 @@ public class AlexAI {
     	
     	if (numberOfPossibleMoves == 1) fullyExpanded[currentMemoryPosition] = true;
 		
-		if (numberOfPossibleMoves > 0) {
-			currentColumn = possibleMoves[randomInt.nextInt(numberOfPossibleMoves)];
+		if (numberOfGoodMoves > 0) {
+			currentColumn = possibleMoves[randomInt.nextInt(numberOfGoodMoves)];
 			return false;
 		}
 		
