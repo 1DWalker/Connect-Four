@@ -246,13 +246,13 @@ public class AlexAI {
     	  
     	if (!playOn || possibleMoves == 6) return false;
     	
-    	if (playerTime - (timeEnd - timeBegin) <= timeTarget) return false;
-//    	if (timeEnd - timeBegin >= 1000) return false; //Time per move.
+//    	if (playerTime - (timeEnd - timeBegin) <= timeTarget) return false;
+////    	if (timeEnd - timeBegin >= 1000) return false; //Time per move.
+//    	
+//    	return true;
     	
-    	return true;
-    	
-//    	if (simulations <= 1000) return true;
-//    	return false;
+    	if (simulations <= 1000) return true;
+    	return false;
     }
     
     public static int treePolicy() {
@@ -505,6 +505,8 @@ public class AlexAI {
     				return false;
     			}
     			
+    			if (!winningConditionCheck(currentPlayer == 1 ? 2 : 1, i, boardHeight - currentColumnCount[i] - 1))
+    			
     			possibleMoves[numberOfPossibleMoves] = i;
     			numberOfPossibleMoves++;
     		}
@@ -592,7 +594,7 @@ public class AlexAI {
 //			double tune = Math.min(0.25, exploration + (Math.pow(winScore, 2) * winCount[childNodes[currentMemoryPosition][i]] + Math.pow(lossScore, 2) * lossCount[childNodes[currentMemoryPosition][i]] + Math.pow(drawScore, 2) * drawCount[childNodes[currentMemoryPosition][i]]) / visits - Math.pow(percentScore, 2));
 //			if (tune != 0.25) System.out.println(tune);
 //			double childScore = percentScore + Math.sqrt(exploration * tune);
-			double childScore = percentScore + 0.9 * Math.sqrt(exploration);
+			double childScore = percentScore + Math.sqrt(exploration);
 			
 //			if ((0.5 * exploration + (Math.pow(winScore, 2) * winCount[childNodes[currentMemoryPosition][i]] + Math.pow(lossScore, 2) * lossCount[childNodes[currentMemoryPosition][i]] + Math.pow(drawScore, 2) * drawCount[childNodes[currentMemoryPosition][i]]) / visits - Math.pow(percentScore, 2)) < 0.25) {
 //				System.out.print(visits);
