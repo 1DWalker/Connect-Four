@@ -6,7 +6,7 @@ public class AlexAI {
 	
 	static Random randomInt = new Random();
 	
-//	static int maxMemory = 1073741824;
+//	static int maxMemory = 673741824;
 //	static int maxMemory = 536870912; //In bytes. 512 mb 
 	static int maxMemory = 50000000;
 	static int boardWidth = 7;
@@ -299,6 +299,8 @@ public class AlexAI {
     	do {
      	  	int[] possibleMoves = new int[boardWidth];
      	  	int numberOfPossibleMoves = 0;
+     	  	int[] goodMoves = new int[boardWidth];
+     	  	int numberOfGoodMoves = 0;
      	  	
      	  	//Play a move randomly
     		for (int i = 0; i < boardWidth; i++) {
@@ -315,8 +317,15 @@ public class AlexAI {
             			if (winningConditionCheck(currentPlayer == 1 ? 2 : 1, i, boardHeight - currentColumnCount[i] - 2)) continue;
             		}
             		
-    				possibleMoves[numberOfPossibleMoves] = i;
+            		possibleMoves[numberOfPossibleMoves] = i;
     				numberOfPossibleMoves++;
+    				
+            		if (currentColumnCount[i] < boardHeight - 1) {
+            			if (winningConditionCheck(currentPlayer, i, boardHeight - currentColumnCount[i] - 2)) continue;
+            		}
+            		
+            		goodMoves[numberOfGoodMoves] = i;
+            		numberOfGoodMoves++;
     			}
     		}
     		
@@ -324,8 +333,12 @@ public class AlexAI {
     			if (currentPlayer == savedPlayer) return lossScore;
     			else return winScore;
     		}
-        		
-    		currentColumn = possibleMoves[randomInt.nextInt(numberOfPossibleMoves)];
+        	
+    		if (numberOfGoodMoves > 0) {
+        		currentColumn = goodMoves[randomInt.nextInt(numberOfGoodMoves)]; //Good moves are moves that do not screw your winning threat on the row above :)
+    		} else {
+    			currentColumn = possibleMoves[randomInt.nextInt(numberOfPossibleMoves)]; //Possible moves could screw with the winning threat, but there is no other column to play
+    		}
 
     		//Play antidecisive moves
     		for (int i = 0; i < boardWidth; i++) {
