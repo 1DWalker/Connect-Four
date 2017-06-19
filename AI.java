@@ -2,7 +2,7 @@
 import java.lang.System;
 import java.util.Random;
 
-public class AlexAI {
+public class AI {
 	
 	static Random randomInt = new Random();
 	
