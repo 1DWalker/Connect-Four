@@ -1,262 +1,436 @@
+import java.lang.System; //Time
 import java.util.Scanner;
-import org.apache.commons.math3.special.Erf; //For Likelihood of Superiority test. Test to see how LOS behaves, then decide how to use it.
+//import org.apache.commons.math3.special.Erf; //For Likelihood of Superiority test. Test to see how LOS behaves, then decide how to use it.
+//If using apache commons math, un-comment the last line in method matchStatement
 
-public class GameBase {
-
-	static int pitNum = 6; //Number of boards per side
-	static int stoneNum = 6; //Number of starting stones per board
-	static int[] board = new int[pitNum * 2 + 2];
-	/* Board representation
-	 * 13 | 12 11 10 9 8 7
-	 *       0  1  2 3 4 5 | 6
-	 */
-	static boolean player = true;
-	static boolean startingPlayer = true; //Used to determine which player starts
-	static boolean repeatMove;
-
-	//Statistics in the perspective of the South player
-	static int wins = 0;
-	static int losses = 0;
-	static int draws = 0;
-
+public class ConnectFour {
+	
 	public static void main(String[] args) {
-		//Control Options
-		int[] options = new int[5];
-		options[0] = 0; //Print board
-		options[1] = 1; //Switch sides after every game
-		//Print board & stats at the end of the game
+		//Options. 1 for YES, 0 for NO, unless a measure size
+		int options[] = new int[7];
+		//Width of board
+		options[0] = 7;
+		//Height of board
+		options[1] = 6;
+		//Computer One
 		options[2] = 1;
-		//Computer One. Computer One always plays the south side
+		//Computer Two:
 		options[3] = 1;
-		//Computer Two. Computer Two always plays the north side
+		//Switch sides after every game
 		options[4] = 1;
-
-		//Time control settings
+		//Print board every move
+		options[5] = 1;
+		//Print board & stats at the end of the game
+		options[6] = 1;
+		
+		//Time control settings	
 		long[] timeControl = new long[2];
 		//beginning time in milliseconds (1000 milliseconds = 1 second)
-		timeControl[0] = 6000;
+		timeControl[0] = 10000;
 		//incremental time in milliseconds
-		timeControl[1] = 600;
-
+		timeControl[1] = 1000;
+		
+		//Match Type. Un-comment the one you want to use and their parameters.
+		//1. 1 game
+	//	int switchSides = 0; //Switch sides? Useful for human vs computer or computer vs computer fun
+	//	oneGame(options, timeControl, switchSides);
+		
 		//2. Match with n games
-		int n = 100000; //# of games
-		for (int i = 1; i <= n; i++) game(n, options, timeControl, i);
+		int n = 3; //# of games
+		match(n, options, timeControl);
 	}
+	
+	public static void oneGame(int[] options, long[] timeControl, int switchSides) {
+		int[][] board = new int[options[0]][options[1]];
 
-	public static void game(int n, int[] options, long[] timeControl, int i) { //Need to implement n, options, timeControl
-		setBoard();
-
-		if (options[0] == 1) printBoard();
-		while (!terminal()) {
-			repeatMove = false;
-			int move;
-			if (player && options[3] == 1) move = AI.findMove();
-			else if (!player && options[4] == 1) move = AI.findMove();
-			else move = playerMove();
-
-			updateBoard(move);
-			if (options[0] == 1) printBoard();
-			if (repeatMove) continue;
-			player = player ? false : true;
-		}
-
-		if (board[pitNum] > board[2 * pitNum + 1]) wins++;
-		else if (board[pitNum] == board[2 * pitNum + 1]) draws++;
-		else losses++;
-
-		captureRemainingPieces();
-		if (options[2] == 1) {
-			printBoard();
-			System.out.print("Game over. ");
-			if (board[pitNum] > board[2 * pitNum + 1]) System.out.println("Player South wins by " + (board[pitNum] - board[2 * pitNum + 1]) + "!");
-			else if (board[pitNum] == board[2 * pitNum + 1]) System.out.println("Draw!");
-			else System.out.println("Player North wins by " + (board[2 * pitNum + 1] - board[pitNum]) + "!");
-
-			System.out.println("W-L-D " + wins + "-" + losses + "-" + draws + ". " + i + " out of " + n + " games completed.");
-			System.out.println("Elo difference: " + (-400.0 * Math.log((1.0 / ((wins + 0.5 * draws) / i)) - 1) / Math.log(10.0)));
-			//https://chessprogramming.wikispaces.com/Match+Statistics
-			System.out.println("LOS: " + (0.5 + 0.5 * Erf.erf((wins - losses) / Math.sqrt(2.0 * (wins + losses)))));
-
-		}
-
-		//Determine the starting player for the next game
-		if (options[1] == 0) player = true; //true for the south player, false for the north player
-		else {
-			startingPlayer = startingPlayer ? false : true;
-			player = startingPlayer;
-		}
-	}
-
-	public static boolean terminal() {
-		//Inefficient as it checks both sides
-		for (int i = 0; i < pitNum; i++) {
-			if (board[i] != 0) break;
-			if (i == pitNum - 1) return true;
-		}
-
-		for (int i = pitNum + 1; i < 2 * pitNum + 1; i++) {
-			if (board[i] != 0) break;
-			if (i == 2 * pitNum) return true;
-		}
-		return false;
-	}
-
-	public static void setBoard() {
-		for (int i = 0; i < pitNum; i++) {
-			board[i] = stoneNum;
-			board[2 * pitNum - i] = stoneNum;
-		}
-
-		board[pitNum] = 0;
-		board[2 * pitNum + 1] = 0;
-	}
-
-	public static void printBoard() {
-		//Find the largest value.
-		int max = -1;
-		for (int i = 0; i < board.length; i++) {
-			if (i == pitNum || i == 2 * pitNum + 1) continue;
-			if (board[i] > max) {
-				max = board[i];
+		do {
+			int gameLength = 0;
+			String player = "X";
+			
+			long[] playerTime = new long[2];
+			playerTime[0] = timeControl[0];
+			playerTime[1] = timeControl[0];
+			long timeStart;
+			long timeEnd;
+			
+			if (options[5] == 1)  {
+				timeStatement(options, playerTime, timeControl, switchSides);
+				printBoard(board);
 			}
-		}
-
-		for (int i = 0; i < pitNum; i++) {
-			if (i + 1 > max) {
-				max = i + 1;
-			}
-		}
-
-		String boardString = " ";
-		for (int i = 2 * pitNum; i >= pitNum + 1; i--) {
-			for (int k = 0; k < Math.floor(Math.log(Math.max(1, max)) / Math.log(10)) - Math.floor(Math.log(Math.max(1, board[i])) / Math.log(10)); k++) boardString += " ";
-			boardString += "  " + board[i];
-		}
-		boardString += " ";
-
-		//Print "<-- North"
-		if ((boardString.length() / 2 - 8) > 0) {
-			for (int i = 0; i < (boardString.length() - 9) / 2; i++) System.out.print(" ");
-			System.out.print("<-- North");
-			for (int i = 0; i < (boardString.length() - 9) / 2; i++) System.out.print(" ");
-		}
-		System.out.println();
-
-		for (int i = 0; i < boardString.length() + 2; i++) System.out.print("-");
-		System.out.println();
-		System.out.println(boardString);
-		System.out.println();
-
-		String storeString = "   ";
-		for (int i = 0; i < Math.floor(Math.log(Math.max(1, max)) / Math.log(10)) - Math.floor(Math.log(Math.max(1, board[2 * pitNum + 1])) / Math.log(10)); i++) storeString += " ";
-		storeString += board[2 * pitNum + 1];
-		int storeStringLength = storeString.length();
-		for (int i = 0; i < boardString.length() - storeStringLength - Math.floor(Math.log(Math.max(1, board[pitNum])) / Math.log(10)) - 2; i++) storeString += " ";
-		storeString += board[pitNum];
-		System.out.println(storeString);
-		System.out.println();
-
-		boardString = " ";
-		for (int i = 0; i < pitNum; i++) {
-			for (int k = 0; k < Math.floor(Math.log(Math.max(1, max)) / Math.log(10)) - Math.floor(Math.log(Math.max(1, board[i])) / Math.log(10)); k++) boardString += " ";
-			boardString += "  " + board[i];
-		}
-		boardString += " ";
-		System.out.println(boardString);
-
-		for (int i = 0; i < boardString.length() + 2; i++) System.out.print("-");
-		System.out.println();
-
-		String columnString = " ";
-		for (int i = 0; i < pitNum; i++) {
-			for (int k = 0; k < Math.floor(Math.log(Math.max(1, max)) / Math.log(10)) - Math.floor(Math.log(Math.max(1, i + 1)) / Math.log(10)); k++) columnString += " ";
-			columnString += "  " + (i + 1);
-		}
-		columnString += " ";
-		System.out.println(columnString);
-
-		//Print "South -->"
-		if ((boardString.length() / 2 - 8) > 0) {
-			for (int i = 0; i < (columnString.length() - 9) / 2; i++) System.out.print(" ");
-			System.out.print("South -->");
-			for (int i = 0; i < (columnString.length() - 9) / 2; i++) System.out.print(" ");
-		}
-		System.out.println();
-
-		System.out.println();
-		System.out.println();
-
-	}
-
-	public static int playerMove() {
-		Scanner keyboard = new Scanner(System.in);
-		System.out.print("Player " + (player ? "South's" : "North's") + " move: ");
-		while (true) {
-			int move = keyboard.nextInt();
-			if (move < 1 || move > pitNum) {
-				System.out.print("Invalid move! Player " + (player ? "South's" : "North's") + " move: ");
-				continue;
-			}
-
-			if (player) {
-				if (board[move - 1] == 0) {
-					System.out.print("Invalid move! Player " + (player ? "South's" : "North's") + " move: ");
-					continue;
+			
+			//Play game
+			while (gameLength < options[0] * options[1]) {
+				int[] moveChoiceCoordinates = new int[2];
+				
+				//Take move from human/computer
+				timeStart = System.currentTimeMillis();
+				if (switchSides == 0) {
+					if (player.equals("X") & options[2] == 1) moveChoiceCoordinates =computerOneMoveCoordinates(board, timeControl, playerTime[0]);
+					else if (player.equals("O") & options[3] == 1) moveChoiceCoordinates = computerTwoMoveCoordinates(board, timeControl, playerTime[1]);
+					else moveChoiceCoordinates = userMoveCoordinates(board, player);
+				} else {
+					if (player.equals("O") & options[2] == 1) moveChoiceCoordinates = computerOneMoveCoordinates(board, timeControl, playerTime[1]);
+					else if (player.equals("X") & options[3] == 1) moveChoiceCoordinates = computerTwoMoveCoordinates(board, timeControl, playerTime[0]);
+					else moveChoiceCoordinates = userMoveCoordinates(board, player);
 				}
-			} else {
-				if (board[2 * pitNum - move + 1] == 0) {
-					System.out.print("Invalid move! Player "  + (player ? "South's" : "North's") + " move: ");
-					continue;
-				}
-			}
+				
+				//end time
+				timeEnd = System.currentTimeMillis();
+				if (player.equals("X")) playerTime[0] -= timeEnd - timeStart;
+				else playerTime[1] -= timeEnd - timeStart;
+				if (playerTime[0] < 0 | playerTime[1] < 0) {
+					timeStatement(options, playerTime, timeControl, switchSides);
+					printBoard(board);
 
-			System.out.println();
-//			keyboard.close();
-			return move;
-		}
-	}
-
-	public static void updateBoard(int move) {
-		int sowLocation;
-		if (player) sowLocation = move - 1;
-		else sowLocation = 2 * pitNum - move + 1;
-
-		int numberOfStones = board[sowLocation];
-		board[sowLocation] = 0;
-		sowLocation++;
-
-		for (int i = 0; i < numberOfStones; i++) {
-			if ((player && sowLocation == 2 * pitNum + 1) || (!player && sowLocation == pitNum)) { //Cannot sow the opponent's store
-				i--;
-				sowLocation++;
-				continue;
-			}
-			if (sowLocation == board.length) sowLocation = 0;
-			//Capture
-			if (i == numberOfStones - 1) {
-				if (sowLocation == pitNum || sowLocation == 2 * pitNum + 1) repeatMove = true;
-				else if (board[sowLocation] == 0 && (player && (sowLocation < pitNum) || !player && (sowLocation > pitNum) )) {
-					board[sowLocation < pitNum ? pitNum : 2 * pitNum + 1] += 1 + board[Math.abs(2 * pitNum - sowLocation)];
-					board[Math.abs(2 * pitNum - sowLocation)] = 0;
+					player = player.equals("X") ? "O" : "X";
+					System.out.println("Player " + player + " wins on time!");
+					System.out.println();
 					break;
 				}
+				
+				changeBoard(board, moveChoiceCoordinates, player);
+				if (options[5] == 1)  {
+					timeStatement(options, playerTime, timeControl, switchSides);
+					printBoard(board);
+				}
+				
+				//Check win conditions
+				if (winningConditionCheck(board, moveChoiceCoordinates, player)) {
+					if (options[5] == 0 & options[6] == 1) {
+						timeStatement(options, playerTime, timeControl, switchSides);
+						printBoard(board);
+					}
+					System.out.println("Player " + player + " wins!");
+					System.out.println();
+					break;
+				}
+				
+				//give time increment
+				if (player.equals("X")) playerTime[0] += timeControl[1];
+				else playerTime[1] += timeControl[1];
+				
+				//switch players, check for draw
+				player = player.equals("X") ? "O" : "X";
+				gameLength++;
+				
+				if (gameLength == options[0] * options[1]) {
+					System.out.println("Draw!");
+				}
 			}
+			
+			clearBoard(board);
+		} while (playAnotherGame());
+	}
+	
+	//Can combine method oneGame and method match but I'm too lazy and it doesn't really matter
+	public static void match(int n, int[] options, long[] timeControl) {
+		int[][] board = new int[options[0]][options[1]];
+		
+		do {
+			int switchSides = 0;
+			int i = 0; //counting unit
+			//These in perspective of player 1: the one that plays first in the match, or computer # one if computers are playing
+			int wins = 0;
+			int draws = 0;
+			int losses = 0;
+	
+			do {
+				int gameLength = 0;
+				String player = "X";
+				
+				long[] playerTime = new long[2];
+				playerTime[0] = timeControl[0];
+				playerTime[1] = timeControl[0];
+				long timeStart;
+				long timeEnd;
+				
+				if (options[5] == 1)  {
+					timeStatement(options, playerTime, timeControl, switchSides);
+					printBoard(board);
+				}
+				
+				//Play game
+				while (gameLength < options[0] * options[1]) {
+					int[] moveChoiceCoordinates = new int[2];
+					
+					//Take move from human/computer
+					timeStart = System.currentTimeMillis();
+					if (switchSides == 0) {
+						if (player.equals("X") & options[2] == 1) moveChoiceCoordinates = computerOneMoveCoordinates(board, timeControl, playerTime[0]);
+						else if (player.equals("O") & options[3] == 1) moveChoiceCoordinates = computerTwoMoveCoordinates(board, timeControl, playerTime[1]);
+						else moveChoiceCoordinates = userMoveCoordinates(board, player);
+					} else {
+						if (player.equals("O") & options[2] == 1) moveChoiceCoordinates = computerOneMoveCoordinates(board, timeControl, playerTime[1]);
+						else if (player.equals("X") & options[3] == 1) moveChoiceCoordinates = computerTwoMoveCoordinates(board, timeControl, playerTime[0]);
+						else moveChoiceCoordinates = userMoveCoordinates(board, player);
+					}
+					
+					//end time
+					timeEnd = System.currentTimeMillis();
+					if (player.equals("X")) playerTime[0] -= timeEnd - timeStart;
+					else playerTime[1] -= timeEnd - timeStart;
+					
+					if (playerTime[0] < 0 | playerTime[1] < 0) {	
+						player = player.equals("X") ? "O" : "X";
+						
+						if (player.equals("X") & switchSides == 0) wins++;
+						else if (player.equals("O") & switchSides == 1) wins++;
+						else losses++;
+						i++;
+						
+						if (options[5] == 0 & options[6] == 1) {
+							timeStatement(options, playerTime, timeControl, switchSides);
+							printBoard(board);
+						}			
+							
+						if (options[6] == 1) {
+							System.out.println("Player " + player + " wins on time!");
+							matchStatement(wins, draws, losses, i, n);
+							System.out.println();
+						}	
+						break;
+					}
+					
+					changeBoard(board, moveChoiceCoordinates, player);
+					if (options[5] == 1)  {
+						timeStatement(options, playerTime, timeControl, switchSides);
+						printBoard(board);
+					}
+					
+					//Check win conditions
+					if (winningConditionCheck(board, moveChoiceCoordinates, player)) {
 
-			board[sowLocation]++;
-			sowLocation++;
+						
+						if (player.equals("X") & switchSides == 0) wins++;
+						else if (player.equals("O") & switchSides == 1) wins++;
+						else losses++;
+						i++;
+						
+						if (options[5] == 0 & options[6] == 1) {
+							timeStatement(options, playerTime, timeControl, switchSides);
+							printBoard(board);
+						}
+						
+						if (options[6] == 1) {
+							System.out.println("Player " + player + " wins!");
+							matchStatement(wins, draws, losses, i, n);
+							System.out.println();
+						}
+						
+						break;
+					}
+					
+					//give time increment
+					if (player.equals("X")) playerTime[0] += timeControl[1];
+					else playerTime[1] += timeControl[1];
+					
+					//switch players, check for draw
+					player = player.equals("X") ? "O" : "X";
+					gameLength++;
+					
+					if (gameLength == options[0] * options[1]) {
+						draws++;
+						i++;
+						
+						if (options[5] == 0 & options[6] == 1) {
+							System.out.println("Draw!");
+							matchStatement(wins, draws, losses, i, n);
+						}
+					}
+				}
+				
+				clearBoard(board);
+				//Switch Sides if option 4 is on
+				if (options[4] == 1) switchSides = switchSides == 0 ? 1 : 0;
+			} while (i < n);
+			
+			if (options[6] == 0) matchStatement(wins, draws, losses, i, n);
+		} while (playAnotherGame());
+	}
+	
+	public static int[] computerOneMoveCoordinates(int[][] board, long[] timeControl, long playerTime) {
+		return ComputerOne.makeMove(board, timeControl, playerTime);
+	}
+	
+	public static int[] computerTwoMoveCoordinates(int[][] board, long[] timeControl, long playerTime) {
+		return ComputerTwo.makeMove(board, timeControl, playerTime);
+	}
+	
+	public static void printBoard(int[][] board) {
+		for (int num = 1; num <= board.length; num++) {
+			System.out.print(num + " ");
+		} 
+		
+		System.out.println();
+		
+		for (int row = 0; row < board[0].length; row++) {
+			for (int col = 0; col < board.length; col++) {
+				switch (board[col][row]) {
+					case 0: 
+						System.out.print(". ");
+						break;
+					case 1: 
+						System.out.print("X ");
+						break;
+					default:
+						System.out.print("O ");
+						break;
+				}
+			}
+			
+			System.out.println();
+		}
+		
+		System.out.println();
+	}
+	
+	public static void clearBoard(int[][] board) {
+		//For when another game is to be played
+		for (int row = 0; row < board[0].length; row++) {
+			for (int col = 0; col < board.length; col++) {
+				board[col][row] = 0;
+			}
 		}
 	}
-
-	public static void captureRemainingPieces() { //At the end of the game, all the pieces belonging to one's side are captured.
-		for (int i = 0; i < board.length; i++) {
-			if (i == pitNum || i == 2 * pitNum + 1) continue;
-			if (i < pitNum) {
-				board[pitNum] += board[i];
-				board[i] = 0;
-			} else {
-				board[2 * pitNum + 1] += board[i];
-				board[i] = 0;
+	
+	public static int[] userMoveCoordinates(int[][] board, String player) {
+		//Take user input and convert into coordinates on the array board
+		int[] userMoveCoordinates = new int[2];
+		Scanner keyboard = new Scanner(System.in);
+		
+		int playerNumber = player.equals("X") ? 1 : 2;
+		
+		legalMoveCheck:
+		while (true) {
+			System.out.print("Player " + player + "'s move: ");
+			int playerMove = keyboard.nextInt();
+			
+			if (playerMove < 1 | playerMove > board.length) {
+				System.out.println("Out of bounds.");
+				continue;
 			}
+			
+			//Is the column filled?
+			for (int i = board[0].length - 1; i >= 0; i--) {
+				if (board[playerMove - 1][i] == 0) {
+					userMoveCoordinates[0] = playerMove - 1;
+					userMoveCoordinates[1] = i;
+					break legalMoveCheck;
+				}
+			}
+			
+			System.out.println("Column filled.");
+		}
+		
+		return userMoveCoordinates;
+	}
+	
+	public static void changeBoard(int[][] board, int[] moveChoiceCoordinates, String player) {
+		board[moveChoiceCoordinates[0]][moveChoiceCoordinates[1]] = player.equals("X") ? 1 : 2;
+	}
+	
+	public static void matchStatement (int wins, int draws, int losses, int i, int n) {
+		System.out.println("W-L-D " + wins + "-" + losses + "-" + draws + ". " + i + " out of " + n + " games completed.");
+		//Information on elo can be found here: https://en.wikipedia.org/wiki/Elo_rating_system , https://en.wikipedia.org/wiki/Chess_rating_system
+		System.out.println("Elo difference: " + (-400.0 * Math.log((1.0 / ((wins + 0.5 * draws) / i)) - 1) / Math.log(10.0)));
+		//https://chessprogramming.wikispaces.com/Match+Statistics
+		//System.out.println("LOS: " + (0.5 + 0.5 * Erf.erf((wins - losses) / Math.sqrt(2.0 * (wins + losses))))); 
+	}
+	
+	public static void timeStatement (int[] options, long[] playerTime, long[] timeControl, int switchSides) {
+		if (options[3] == 1 & switchSides == 0) System.out.print("C1: ");
+		else if (options[4] == 1 & switchSides == 1) System.out.print("C2: ");
+		else System.out.print("H: ");		
+		System.out.print((double) playerTime[0] / 1000 + "s, ");
+		
+		if (options[3] == 1 & switchSides == 1) System.out.print("C1: ");
+		else if (options[4] == 1 & switchSides == 0) System.out.print("C2: ");
+		else System.out.print("H: ");	
+		System.out.println((double) playerTime[1] / 1000 + "s. Incre: " + (double) timeControl[1] / 1000);
+	}
+	
+	//If you have a faster version, include it in your engine! This is just something makes sense
+	public static boolean winningConditionCheck(int[][] board, int[] moveChoiceCoordinates, String player) {
+		int numberInARow;
+		int playerNumber = player.equals("X") ? 1 : 2;
+		int coordinatesSum = moveChoiceCoordinates[0] + moveChoiceCoordinates[1]; //Used in checking for diagonals
+		
+		//Vertical check
+		numberInARow = 1;
+		for (int row = moveChoiceCoordinates[1] + 1; row <= moveChoiceCoordinates[1] + 3; row++) {
+			if (row > board[0].length - 1) break;
+			if (board[moveChoiceCoordinates[0]][row] == playerNumber) numberInARow++;
+			else break;
+			if (numberInARow == 4) return true;
+		}
+		
+		//Horizontal check (left to right)
+		numberInARow = 1;
+		for (int col = moveChoiceCoordinates[0] + 1; col <= moveChoiceCoordinates[0] + 3; col++) {
+			if (col > board.length - 1) break;
+			if (board[col][moveChoiceCoordinates[1]] == playerNumber) numberInARow++;
+			else break;
+			if (numberInARow == 4) return true;
+		}
+		
+		//(right to left)
+		for (int col = moveChoiceCoordinates[0] - 1; col >= moveChoiceCoordinates[0] - 3; col--) {
+			if (col < 0) break;
+			if (board[col][moveChoiceCoordinates[1]] == playerNumber) numberInARow++;
+			else break;
+			if (numberInARow == 4) return true;
+		}
+		
+		//Diagonal check top right to bottom left (center to top right)
+		numberInARow = 1;
+		for (int col = moveChoiceCoordinates[0] + 1; col <= moveChoiceCoordinates[0] + 3; col++) {
+			if (col > board.length - 1 | coordinatesSum - col < 0) break;
+			if (board[col][coordinatesSum - col] == playerNumber) numberInARow++;
+			else break;
+			if (numberInARow == 4) return true;
+		}
+		
+		//(center to bottom left)
+		for (int col = moveChoiceCoordinates[0] - 1; col >= moveChoiceCoordinates[0] - 3; col--) {
+			if (col < 0 | coordinatesSum - col > board[0].length - 1) break;
+			if (board[col][coordinatesSum - col] == playerNumber) numberInARow++;
+			else break;
+			if (numberInARow == 4) return true;
+		}
+		
+		//Diagonal check top left to bottom right (center to top left) 
+		numberInARow = 1;
+		for (int i = 1; i < 4; i++) {
+			if (moveChoiceCoordinates[0] - i < 0 | moveChoiceCoordinates[1] - i < 0) break;
+			if (board[moveChoiceCoordinates[0] - i][moveChoiceCoordinates[1] - i] == playerNumber) numberInARow++;
+			else break;
+			if (numberInARow == 4) return true;
+		}
+		
+		//(center to bottom right)
+		for (int i = 1; i < 4; i++) {
+			if (moveChoiceCoordinates[0] + i > board.length - 1| moveChoiceCoordinates[1] + i > board[0].length - 1) break;
+			if (board[moveChoiceCoordinates[0] + i][moveChoiceCoordinates[1] + i] == playerNumber) numberInARow++;
+			else break;
+			if (numberInARow == 4) return true;
+		}
+		
+		return false;
+	}	
+		
+	public static boolean playAnotherGame() {
+		Scanner keyboard = new Scanner(System.in);
+			
+		System.out.print("1 - play again, 2 - exit: ");
+		int choice = keyboard.nextInt();
+		System.out.println();
+		
+		switch (choice) {
+			case 1:
+				return true;
+			default:
+				System.out.println("Program terminated.");
+				return false;
 		}
 	}
 }
